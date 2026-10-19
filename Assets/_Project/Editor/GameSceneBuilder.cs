@@ -152,6 +152,11 @@ namespace SpaghettiWires.EditorTools
             tools.BuildActions = paidActions;
             EditorUtility.SetDirty(tools);
 
+            // Wyniki rozmów zmieniają pieniądze i reputację, a przegrana zatrzymuje symulację.
+            var callEconomy = session.gameObject.AddComponent<CallEconomyLink>();
+            SetField(callEconomy, "session", session);
+            SetField(callEconomy, "simulation", Object.FindAnyObjectByType<CallSimulationRunner>());
+
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[GameSceneBuilder] Zapisano {ScenePath}");
