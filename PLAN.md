@@ -9,8 +9,8 @@ Kolejność prac nad grą na podstawie [GDD.md](GDD.md) i [TECH.md](TECH.md). Pl
 - ✅ GDD i TECH (`develop`)
 - ✅ Kamera izometryczna `IsometricCameraController` (`develop`)
 - ✅ Model drewnianego słupa (gałąź `WoodenPole`)
-- ⚠️ Prototyp sieci na gałęzi `Network` jest w starym modelu, więc trzeba go przepisać
-- ⚠️ TECH nie zawiera jeszcze dwóch decyzji z GDD: kabel zajmuje √(liczba żył) miejsc na słupie, a dom przenosi naraz jedną rozmowę
+- ✅ Rdzeń sieci (etap 1) na gałęzi `Network`, **jeszcze nie włączony do `develop`**. Kto zaczyna etap 2 lub dalszy, powinien wyjść od `Network` albo poczekać na scalenie.
+- ✅ TECH zawiera √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę
 
 ---
 
@@ -43,22 +43,26 @@ Równolegle od etapu 3: modele, dźwięk, UI
 ## Etapy
 
 ### 0. Porządki (ok. 1 h)
-- [ ] Uzupełnić TECH o √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę.
-- [ ] Ustalić **skalę**: rozmiar pola siatki w metrach i wielkość domu względem słupa.
-- [ ] Ustalić strukturę folderów i assembly: `Networking`, `Building` (reguły), `Simulation`, `Views`, `Input`, `UI`.
+- [x] Uzupełnić TECH o √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę.
+- [x] Ustalić **skalę**: rozmiar pola siatki w metrach i wielkość domu względem słupa. Pole 4 m, dom zajmuje 1 pole (TECH 1).
+- [x] Ustalić strukturę folderów i assembly: `Networking`, `Building` (reguły), `Simulation`, `Views`, `Input`, `UI` (TECH 1).
 - [ ] Zdecydować, co z gałęziami `Network` (do przepisania) i `WoodenPole` (do włączenia).
+  - `Network`: przepisany, do włączenia do `develop`.
+  - `WoodenPole`: gałęzi nie ma na zdalnym repozytorium, trzeba ją wypchnąć.
 
 ### 1. Rdzeń sieci: czysty C#, testy EditMode (ok. 4–6 h)
 Fundament wszystkiego, więc warto zrobić go porządnie z testami.
-- [ ] **Struktura:** `Node` (Id, typ) i niezmienny `Cable` (A, B, liczba żył, długość), indeks węzeł → kable, zdarzenia dodania i usunięcia.
-- [ ] **Stan techniczny:** słownik `cableId → uszkodzone żyły`, operacja uszkodzenia, pomiar.
-- [ ] **Ruch:**
-  - [ ] `Call` z trasą,
-  - [ ] wyszukiwanie najkrótszej trasy (Dijkstra) po kablach z wolnymi żyłami,
-  - [ ] dom przenosi naraz jedną rozmowę,
-  - [ ] zajmowanie i zwalnianie żył,
-  - [ ] zrywanie najnowszych rozmów przy uszkodzeniu lub usunięciu kabla.
-- [ ] **Fasada** `PhoneNetwork` jako jedyny punkt wejścia.
+
+> Zrobione na gałęzi `Network`: `Assets/_Project/Scripts/Networking/`, testy w `Assets/_Project/Tests/EditMode/Networking/`. Opis w TECH 9.
+- [x] **Struktura:** `Node` (Id, typ) i niezmienny `Cable` (A, B, liczba żył, długość), indeks węzeł → kable, zdarzenia dodania i usunięcia.
+- [x] **Stan techniczny:** słownik `cableId → uszkodzone żyły`, operacja uszkodzenia, pomiar.
+- [x] **Ruch:**
+  - [x] `Call` z trasą,
+  - [x] wyszukiwanie najkrótszej trasy (Dijkstra) po kablach z wolnymi żyłami,
+  - [x] dom przenosi naraz jedną rozmowę,
+  - [x] zajmowanie i zwalnianie żył,
+  - [x] zrywanie najnowszych rozmów przy uszkodzeniu lub usunięciu kabla.
+- [x] **Fasada** `PhoneNetwork` jako jedyny punkt wejścia.
 
 ### 2. Reguły budowy (ok. 2–3 h)
 - [ ] Mapa: `NodeId → pole siatki` oraz klasa słupa.
