@@ -94,6 +94,8 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 ### 6. Ekonomia i zadowolenie (ok. 3 h)
 - [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
+  - [x] Koszty budowy: słup za stałą cenę, kabel i magistrala od długości (`BuildPrices`, `PaidBuildActions`).
+  - [ ] Pieniądze za udane rozmowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
 - [x] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
   - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`).

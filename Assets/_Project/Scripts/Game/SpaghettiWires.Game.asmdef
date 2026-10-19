@@ -3,7 +3,11 @@
     "rootNamespace": "SpaghettiWires.Game",
     "references": [
         "SpaghettiWires.Simulation",
-        "SpaghettiWires.UI"
+        "SpaghettiWires.UI",
+        "SpaghettiWires.Tools",
+        "SpaghettiWires.Views",
+        "SpaghettiWires.Map",
+        "Bipolar.InterfaceSerialization"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

@@ -255,4 +255,6 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `ChangeReputation(delta)` w granicach 0–1. Reputacja 0 to przegrana.
   - Zdarzenia `MoneyChanged`, `ReputationChanged` i `Lost(LossReason)`, to ostatnie tylko raz.
 - **`GameSession`** (`Scripts/Game/`): tworzy `Economy` z wartościami startowymi z Inspectora, liczy czas gry (stoi po przegranej), podpina pieniądze, reputację i czas do `HudView`, a przegraną do `GameOverView`. W menu komponentu są akcje debugowe do sprawdzenia HUD i przegranej.
+- **Ceny budowy:** `BuildPrices` (`Scripts/Simulation/`, czysty C#): słup za stałą cenę, kabel za metr, magistrala za metr i żyłę. Długość to odległość między polami węzłów (pole 4 m), bez zwisu. Cena zaokrąglana w górę.
+- **`PaidBuildActions`** (`Scripts/Game/`): nakładka na `IBuildActions` (dziś sandbox, później reguły). `Check*` najpierw pyta warstwę pod spodem, potem sprawdza pieniądze („Za mało pieniędzy…”). `PlacePole` i `LayCable` pobierają pieniądze przez `Economy.TrySpend`, a HUD odświeża się przez `MoneyChanged`. Usuwanie kabla i pomiar są darmowe. Ceny ustawia się w Inspectorze.
 - Do zrobienia: reguły, symulacja, widoki.

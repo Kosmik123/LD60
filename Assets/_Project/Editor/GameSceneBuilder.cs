@@ -110,8 +110,6 @@ namespace SpaghettiWires.EditorTools
             SetField(tools, "gridOverlay", overlay);
             SetField(tools, "cellHighlight", cellHighlight);
             SetField(tools, "cablePreview", preview);
-            tools.BuildActions = sandbox;
-            EditorUtility.SetDirty(tools);
 
             var toolbar = ui.gameObject.AddComponent<ToolbarView>();
             SetField(toolbar, "tools", tools);
@@ -134,6 +132,16 @@ namespace SpaghettiWires.EditorTools
             var session = new GameObject("GameSession").AddComponent<GameSession>();
             SetField(session, "hud", hud);
             SetField(session, "gameOver", gameOver);
+
+            // Narzędzia płacą przez nakładkę, która dalej przekazuje akcje do sandboxa.
+            var paidActions = session.gameObject.AddComponent<PaidBuildActions>();
+            paidActions.Inner = sandbox;
+            SetField(paidActions, "session", session);
+            SetField(paidActions, "grid", grid);
+            SetField(paidActions, "views", views);
+            EditorUtility.SetDirty(paidActions);
+            tools.BuildActions = paidActions;
+            EditorUtility.SetDirty(tools);
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
