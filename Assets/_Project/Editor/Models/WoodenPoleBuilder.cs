@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using SpaghettiWires.Views;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,10 +11,11 @@ namespace SpaghettiWires.EditorTools
     /// Buduje prefab najprostszego drewnianego słupa telefonicznego z prymitywów Unity.
     /// 1 jednostka = 1 metr. Punkt (0, 0, 0) prefabu to podstawa słupa na ziemi.
     /// Na szczycie każdego izolatora jest pusty obiekt „CableAnchor_N” – punkt zaczepienia kabla.
+    /// To prefab słupa używany w scenie gry (przez <see cref="NodeView"/>).
     /// </summary>
     public static class WoodenPoleBuilder
     {
-        private const string PrefabPath = "Assets/_Project/Prefabs/Poles/WoodenPole.prefab";
+        public const string PrefabPath = "Assets/_Project/Prefabs/Poles/WoodenPole.prefab";
         private const string MaterialsFolder = "Assets/_Project/Materials";
 
         // Wymiary w metrach.
@@ -78,6 +80,9 @@ namespace SpaghettiWires.EditorTools
             collider.center = new Vector3(0f, PoleHeight / 2f, 0f);
             collider.height = PoleHeight;
             collider.radius = 0.4f;
+
+            // Słup jest widokiem węzła sieci: kable zaczepia na punktach CableAnchor_N.
+            root.AddComponent<NodeView>();
 
             EnsureFolder(Path.GetDirectoryName(PrefabPath));
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

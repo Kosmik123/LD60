@@ -17,7 +17,8 @@ namespace SpaghettiWires.EditorTools
 {
     /// <summary>
     /// Buduje scenę gry z siatką, widokami, narzędziami i paskiem narzędzi oraz zastępcze modele
-    /// domu, słupa i centrali. Uruchamiane raz; dalej scenę można edytować ręcznie.
+    /// domu i centrali. Słup to drewniany słup z <see cref="WoodenPoleBuilder"/>.
+    /// Uruchamiane raz; dalej scenę można edytować ręcznie.
     /// </summary>
     public static class GameSceneBuilder
     {
@@ -35,7 +36,7 @@ namespace SpaghettiWires.EditorTools
         {
             var materials = new Materials();
             BuildHousePrefab(materials);
-            BuildPolePrefab(materials);
+            WoodenPoleBuilder.Build();
             BuildExchangePrefab(materials);
             var panelSettings = BuildPanelSettings();
             AssetDatabase.SaveAssets();
@@ -44,7 +45,8 @@ namespace SpaghettiWires.EditorTools
 
             // Nowa scena zwalnia nieużywane assety, więc prefaby wczytujemy dopiero teraz.
             var house = LoadNodePrefab("House");
-            var pole = LoadNodePrefab("Pole");
+            var pole = AssetDatabase.LoadAssetAtPath<NodeView>(WoodenPoleBuilder.PrefabPath)
+                ?? throw new InvalidOperationException("Wooden pole prefab was not saved.");
             var exchange = LoadNodePrefab("Exchange");
 
             var camera = CreateCamera();
@@ -209,23 +211,6 @@ namespace SpaghettiWires.EditorTools
             SaveNodePrefab(root, "House");
         }
 
-        private static void BuildPolePrefab(Materials materials)
-        {
-            const float height = 7f, diameter = 0.24f, armHeight = 6.6f, armLength = 1.4f, arm = 0.1f;
-            var root = new GameObject("Pole");
-            CreatePrimitive(PrimitiveType.Cylinder, "Pole", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(diameter, height / 2f, diameter), materials.Wood);
-            CreatePrimitive(PrimitiveType.Cube, "Crossarm", root.transform, new Vector3(0f, armHeight, 0f), new Vector3(armLength, arm, arm), materials.Wood);
-
-            float top = armHeight + arm / 2f + 0.1f;
-            AddAnchors(root, new Vector3(-0.55f, top, 0f), new Vector3(-0.2f, top, 0f), new Vector3(0.2f, top, 0f), new Vector3(0.55f, top, 0f));
-
-            var collider = root.AddComponent<CapsuleCollider>();
-            collider.center = new Vector3(0f, height / 2f, 0f);
-            collider.height = height;
-            collider.radius = 0.5f;
-            SaveNodePrefab(root, "Pole");
-        }
-
         private static void BuildExchangePrefab(Materials materials)
         {
             const float width = 3.6f, height = 6f;
@@ -274,7 +259,6 @@ namespace SpaghettiWires.EditorTools
             public readonly Material Ground = Lit("Ground", new Color(0.36f, 0.4f, 0.33f));
             public readonly Material Wall = Lit("HouseWall", new Color(0.82f, 0.74f, 0.6f));
             public readonly Material Roof = Lit("HouseRoof", new Color(0.42f, 0.3f, 0.26f));
-            public readonly Material Wood = Lit("PoleWood", new Color(0.4f, 0.27f, 0.16f));
             public readonly Material Exchange = Lit("Exchange", new Color(0.55f, 0.6f, 0.68f));
 
             // Kable i podglądy biorą kolor z wierzchołków (LineRenderer, linie siatki), więc shader cząsteczek.
