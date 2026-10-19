@@ -168,7 +168,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 |---|---|
 | Struktura | dodano / usunięto węzeł, dodano / usunięto kabel |
 | Stan techniczny | żyły kabla uszkodzone |
-| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla lub domu |
+| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla lub węzła |
 
 Widoki podpinają się wybiórczo: grafika kabla pod strukturę (i ewentualne efekty uszkodzeń, np. iskry), a świecenie rozmów pod ruch.
 
@@ -236,4 +236,10 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `Damage(cableId, n)` i `Break(cableId)` dodają uszkodzone żyły, najwyżej do `Pairs`. Zdarzenie `PairsDamaged` tylko przy zmianie.
   - `GetWorkingPairs` to wynik pomiaru miernikiem. `DamagedCableIds` przyda się np. do wskaźnika chaosu.
   - Po usunięciu kabla jego wpis znika.
-- Do zrobienia: ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
+- **Ruch** (4.3, 4.4): `Traffic` i `Call`.
+  - `TryStartCall(from, to, out call)` szuka trasy algorytmem Dijkstry (suma `Length`) po kablach z wolną żyłą i przez węzły z wolną linią. Zwraca false, czyli „zajęte”.
+  - Pojemność węzła: `Traffic.GetCallCapacity(kind)`, dom 1, słup i centrala bez limitu.
+  - `EndCall` zwalnia żyły i linie. Uszkodzenie żył lub usunięcie kabla zrywa najnowsze rozmowy (`CallDropped`).
+  - Zajętość: `GetBusyPairs`, `GetFreePairs`, `GetNodeLoad` oraz zdarzenia `CableLoadChanged`, `NodeLoadChanged`.
+- **Fasada** `PhoneNetwork`: tworzy trzy warstwy we właściwej kolejności i udostępnia je jako `Structure`, `Condition`, `Traffic`. Nie powiela ich operacji.
+- Do zrobienia: reguły, symulacja, widoki.
