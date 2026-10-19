@@ -229,6 +229,8 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 9. Stan implementacji
 
+> Kod opisany poniżej jest na gałęzi `Network` i nie jest jeszcze włączony do `develop`.
+
 - **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Networking/` (assembly `SpaghettiWires.Networking`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Networking/`.
   - Id węzłów i kabli (`NodeId`, `CableId`) nadaje sieć i nie używa ich ponownie. Domyślne Id (wartość 0) nie wskazuje żadnego obiektu.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).

@@ -9,7 +9,7 @@ Kolejność prac nad grą na podstawie [GDD.md](GDD.md) i [TECH.md](TECH.md). Pl
 - ✅ GDD i TECH (`develop`)
 - ✅ Kamera izometryczna `IsometricCameraController` (`develop`)
 - ✅ Model drewnianego słupa (gałąź `WoodenPole`)
-- ✅ Rdzeń sieci na gałęzi `Network`, przepisany na model z TECH (etap 1)
+- ✅ Rdzeń sieci (etap 1) na gałęzi `Network`, **jeszcze nie włączony do `develop`**. Kto zaczyna etap 2 lub dalszy, powinien wyjść od `Network` albo poczekać na scalenie.
 - ✅ TECH zawiera √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę
 
 ---
@@ -52,6 +52,8 @@ Równolegle od etapu 3: modele, dźwięk, UI
 
 ### 1. Rdzeń sieci: czysty C#, testy EditMode (ok. 4–6 h)
 Fundament wszystkiego, więc warto zrobić go porządnie z testami.
+
+> Zrobione na gałęzi `Network`: `Assets/_Project/Scripts/Networking/`, testy w `Assets/_Project/Tests/EditMode/Networking/`. Opis w TECH 9.
 - [x] **Struktura:** `Node` (Id, typ) i niezmienny `Cable` (A, B, liczba żył, długość), indeks węzeł → kable, zdarzenia dodania i usunięcia.
 - [x] **Stan techniczny:** słownik `cableId → uszkodzone żyły`, operacja uszkodzenia, pomiar.
 - [x] **Ruch:**
