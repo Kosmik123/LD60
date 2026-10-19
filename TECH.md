@@ -74,7 +74,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 |---|---|---|---|
 | **Struktura** | węzły; kabel: A, B, liczba żył, długość | Przy położeniu i usunięciu kabla. Poza tym nigdy. | Gracz (przez reguły) |
 | **Stan techniczny** | liczba uszkodzonych żył | Przy awariach (tylko rośnie) | Symulacja awarii |
-| **Ruch** | trwające rozmowy, zajęte żyły | Ciągle, kilka razy na sekundę | Symulacja rozmów |
+| **Ruch** | trwające rozmowy, zajęte żyły, zajęte domy | Ciągle, kilka razy na sekundę | Symulacja rozmów |
 
 ```
 ┌─ Struktura (CableNetwork) ─────────┐   kable niezmienne po położeniu
@@ -88,7 +88,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
         ▲ czyta
 ┌─ Ruch (Traffic) ───────────────────┐
 │  trwające rozmowy (Call + trasa)   │   źródło prawdy
-│  zajęte żyły na kablu              │   indeks wyliczany z rozmów
+│  zajęte żyły na kablu, zajęte domy │   indeksy wyliczane z rozmów
 │  wyszukiwanie trasy                │
 └────────────────────────────────────┘
 ```
@@ -109,6 +109,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 
 - Węzły są **równoważne**: płaski słownik, bez hierarchii i bez wewnętrznych złączy.
 - Każdy słup i centrala **przełącza rozmowy** między wszystkimi swoimi kablami. Nie modelujemy, co jest z czym połączone w środku.
+- Dom też przekazuje rozmowy, ale ma **jedną linię**: naraz uczestniczy w najwyżej jednej rozmowie, swojej albo cudzej (przechodzącej). Słup i centrala nie mają limitu rozmów, ogranicza je tylko liczba wolnych żył.
 - Węzły **nie znają** kabli. Struktura utrzymuje wewnętrzny indeks „węzeł → kable” wyłącznie do szybkiego przeszukiwania grafu.
 - Magistrala to po prostu kabel z `Pairs > 1`. Zwykły kabel ma `Pairs = 1`.
 - **Liczba uszkodzonych żył wystarczy.** Nie pamiętamy, które żyły padły, bo wszystkie są równoważne. Zwykły kabel jest albo sprawny (0), albo zerwany (1).
@@ -120,7 +121,9 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 - Rozmowa szuka **najkrótszej trasy** (suma `Length`, algorytm Dijkstry) po dostępnych kablach.
 - **Bez limitu długości trasy.** Długość zwracana jest razem z trasą, a symulacja przelicza ją na jakość rozmowy.
 - Trasa jest wybierana **raz**, przy rozpoczęciu rozmowy, i nie zmienia się w trakcie.
-- Wewnątrz trasy rozmowa może przechodzić tylko przez węzły, które **przełączają** rozmowy (słup, centrala). Czy dom też przełącza, jest otwartą decyzją designu, więc to będzie flaga zależna od typu węzła, łatwa do zmiany.
+- Rozmowa może przechodzić przez każdy typ węzła (dom, słup, centrala).
+- Dom jest **dostępny** tylko wtedy, gdy nie uczestniczy w żadnej trwającej rozmowie, ani jako koniec, ani jako węzeł pośredni. Zajęty dom jest pomijany przy wyszukiwaniu trasy. Jeśli zajęty jest dom początkowy lub docelowy, rozmowa od razu dostaje „zajęte”.
+- Limit rozmów na węźle (1 dla domu, brak dla słupa i centrali) to wartość zależna od typu węzła, łatwa do zmiany w balansie.
 
 ### 4.4 Operacje
 
@@ -130,13 +133,13 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 | Położenie kabla | Struktura | Między dwoma węzłami, z liczbą żył i długością. |
 | Usunięcie kabla (nożyce) | Struktura | Usuwa kabel. Stan techniczny usuwa jego wpis, ruch zrywa rozmowy, które nim szły. **To jedyna forma „naprawy”.** |
 | Uszkodzenie żył | Stan techniczny | Zwiększa liczbę uszkodzonych żył o `n` (najwyżej do `Pairs`). Całkowite zerwanie = uszkodzenie wszystkich żył. Jeśli trwających rozmów jest więcej niż sprawnych żył, ruch zrywa **najnowsze** rozmowy. |
-| Rozpoczęcie rozmowy | Ruch | Szuka trasy. Jeśli jest, zajmuje po jednej żyle w każdym kablu trasy i zwraca rozmowę. Jeśli nie, zwraca „zajęte”. |
-| Zakończenie rozmowy | Ruch | Zwalnia żyły. |
+| Rozpoczęcie rozmowy | Ruch | Szuka trasy. Jeśli jest, zajmuje po jednej żyle w każdym kablu trasy oraz linię każdego domu na trasie (także początkowego i docelowego) i zwraca rozmowę. Jeśli nie, zwraca „zajęte”. |
+| Zakończenie rozmowy | Ruch | Zwalnia żyły i linie domów. |
 | Pomiar (miernik) | Stan techniczny | Zwraca liczbę sprawnych żył kabla. |
 
 **Nie ma operacji naprawy.** Uszkodzenia tylko przybywają, aż do usunięcia kabla. Nie ma też automatycznej wymiany: nowy kabel to zawsze osobne położenie kabla.
 
-**Zrywanie rozmów:** gdy kabel traci żyły, a trwających na nim rozmów jest więcej niż sprawnych żył, zrywamy rozmowy od najnowszej. Jest to deterministyczne, więc łatwe do testowania. Zerwana rozmowa zwalnia żyły na wszystkich kablach swojej trasy.
+**Zrywanie rozmów:** gdy kabel traci żyły, a trwających na nim rozmów jest więcej niż sprawnych żył, zrywamy rozmowy od najnowszej. Jest to deterministyczne, więc łatwe do testowania. Zerwana rozmowa zwalnia żyły na wszystkich kablach swojej trasy i linie domów na niej.
 
 ### 4.5 Zdarzenia
 
@@ -144,7 +147,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 |---|---|
 | Struktura | dodano / usunięto węzeł, dodano / usunięto kabel |
 | Stan techniczny | żyły kabla uszkodzone |
-| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla |
+| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla lub domu |
 
 Widoki podpinają się wybiórczo: grafika kabla pod strukturę (i ewentualne efekty uszkodzeń, np. iskry), a świecenie rozmów pod ruch.
 
@@ -161,7 +164,7 @@ Jedyna droga, którą akcje gracza trafiają do sieci.
 - **Walidacja przed wywołaniem sieci:**
   - odległość między węzłami ≤ limit (zależny od typu kabla),
   - limit kabli na słupie wg klasy: mały 5, średni 12, duży 30, centrala bez limitu (wartości wstępne),
-  - liczą się wszystkie kable, także uszkodzone, a **magistrala liczy się jako jeden kabel**,
+  - liczą się wszystkie kable, także uszkodzone, a kabel zajmuje **√(liczba żył)** miejsc: zwykły 1, magistrala 4 → 2, 9 → 3, 16 → 4,
   - koszt.
 - **Długość kabla** liczona z pozycji i przekazywana do sieci jako `Length`.
 - **Podgląd:** ta sama walidacja bez zmiany stanu, żeby kabel mógł świecić na czerwono, zanim gracz puści przycisk.
