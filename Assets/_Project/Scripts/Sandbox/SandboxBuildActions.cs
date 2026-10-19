@@ -68,8 +68,7 @@ namespace SpaghettiWires.Sandbox
             if (fromNodeId == toNodeId)
                 return BuildCheck.Fail("Kabel musi łączyć dwa różne miejsca.");
 
-            float span = pairs > 1 ? trunkSpan : cableSpan;
-            if (MapGrid.CellDistance(_cellByNode[fromNodeId], _cellByNode[toNodeId]) > span)
+            if (MapGrid.CellDistance(_cellByNode[fromNodeId], _cellByNode[toNodeId]) > GetSpan(pairs))
                 return BuildCheck.Fail("Za daleko. Postaw słup po drodze.");
             if (!CanAttach(fromNodeId, pairs) || !CanAttach(toNodeId, pairs))
                 return BuildCheck.Fail("Słup jest pełny. Postaw kolejny słup.");
@@ -77,6 +76,10 @@ namespace SpaghettiWires.Sandbox
                 return BuildCheck.Fail("Kabel przecina budynek.");
             return BuildCheck.Ok;
         }
+
+        public float GetMaxCableLength(int pairs) => GetSpan(pairs) * grid.Grid.CellSize;
+
+        private float GetSpan(int pairs) => pairs > 1 ? trunkSpan : cableSpan;
 
         public int NextCableId => _nextCableId;
 

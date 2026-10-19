@@ -41,6 +41,8 @@ namespace SpaghettiWires.Game
 
         public int NextCableId => Inner.NextCableId;
 
+        public float GetMaxCableLength(int pairs) => Inner.GetMaxCableLength(pairs);
+
         public BuildCheck CheckPole(Vector2Int cell)
         {
             var check = Inner.CheckPole(cell);
