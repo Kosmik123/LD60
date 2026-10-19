@@ -1,6 +1,6 @@
 {
-    "name": "SpaghettiWires.Network",
-    "rootNamespace": "SpaghettiWires.Network",
+    "name": "SpaghettiWires.Networking",
+    "rootNamespace": "SpaghettiWires.Networking",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

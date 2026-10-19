@@ -1,6 +1,6 @@
 using System;
 
-namespace SpaghettiWires.Network
+namespace SpaghettiWires.Networking
 {
     /// <summary>
     /// Kabel między dwoma węzłami. Niezmienny po położeniu (TECH 4.2).

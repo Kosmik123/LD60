@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SpaghettiWires.Network
+namespace SpaghettiWires.Networking
 {
     /// <summary>
     /// Struktura sieci (TECH 4.1): węzły i kable między nimi.

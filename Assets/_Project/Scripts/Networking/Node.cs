@@ -1,4 +1,4 @@
-namespace SpaghettiWires.Network
+namespace SpaghettiWires.Networking
 {
     /// <summary>
     /// Węzeł sieci: dom, słup albo centrala. Jeden węzeł na obiekt na mapie.

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace SpaghettiWires.Network
+namespace SpaghettiWires.Networking
 {
     /// <summary>
     /// Stan techniczny sieci (TECH 4.1): ile żył każdego kabla jest uszkodzonych.

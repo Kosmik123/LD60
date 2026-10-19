@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using SpaghettiWires.Network;
+using SpaghettiWires.Networking;
 
-namespace SpaghettiWires.Tests.Network
+namespace SpaghettiWires.Tests.Networking
 {
     public class CableConditionTests
     {

@@ -13,6 +13,27 @@ Architektura i decyzje programistyczne. Design gry jest w [GDD.md](GDD.md).
 | **Testy** | `Assets/_Project/Tests/EditMode/` (Unity Test Framework, NUnit) |
 | **Assembly** | Każdy system logiki ma własny `.asmdef`. Testy mają osobne assembly tylko dla edytora. |
 
+### Foldery i assembly
+Każdy folder w `Assets/_Project/Scripts/` to osobne assembly `SpaghettiWires.<Nazwa>` i namespace o tej samej nazwie. Foldery tworzymy dopiero wtedy, gdy powstaje w nich pierwszy kod.
+
+| Folder | Zawartość | Zależy od Unity? |
+|---|---|---|
+| `Networking` | Sieć: struktura, stan techniczny, ruch, fasada (4) | Nie |
+| `Building` | Reguły budowy i mapa (5) | Minimalnie |
+| `Simulation` | Rozmowy w czasie, awarie, ekonomia, rozwój miasta (6) | Nie |
+| `Views` | `NodeView`, `CableView` i inne widoki (7) | Tak |
+| `Input` | Narzędzia gracza, wybieranie obiektów myszą | Tak |
+| `UI` | HUD, menu, ekrany | Tak |
+| `CameraControl` | Kamera izometryczna | Tak |
+
+Testy: `Assets/_Project/Tests/EditMode/<Nazwa>/`, jedno assembly `SpaghettiWires.Tests.EditMode`.
+
+### Skala
+- **1 jednostka Unity = 1 m.**
+- **Pole siatki: 4 × 4 m.** Siatka jest logiczna i niewidoczna dla gracza.
+- **Dom zajmuje 1 pole** (4 × 4 m, wysokość ok. 6–10 m). Słup stoi na 1 polu i ma ok. 8 m wysokości.
+- Odległości w regułach (np. zasięg kabla) podajemy w polach, a długość kabla (`Length`) w metrach.
+
 ---
 
 ## 2. Zasady ogólne
@@ -208,7 +229,7 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 9. Stan implementacji
 
-- **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Network/` (assembly `SpaghettiWires.Network`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Network/`.
+- **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Networking/` (assembly `SpaghettiWires.Networking`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Networking/`.
   - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
 - **Stan techniczny** (4.1, 4.4): `CableCondition` z referencją do struktury (tylko odczyt i zdarzenie usunięcia kabla).
