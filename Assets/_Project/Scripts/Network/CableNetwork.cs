@@ -5,7 +5,7 @@ namespace SpaghettiWires.Network
 {
     /// <summary>
     /// Struktura sieci (TECH 4.1): węzły i kable między nimi.
-    /// Nie wie o pozycjach, limitach słupów, uszkodzeniach ani rozmowach.
+    /// Nie wie o pozycjach, długościach kabli, limitach słupów, uszkodzeniach ani rozmowach.
     /// Błędne wywołania (nieznane Id, pętla, zła liczba żył) rzucają wyjątek:
     /// akcje gracza są walidowane wcześniej, w warstwie reguł.
     /// </summary>
@@ -54,7 +54,7 @@ namespace SpaghettiWires.Network
         /// <summary>
         /// Kładzie nowy kabel. Między tymi samymi węzłami może wisieć wiele kabli.
         /// </summary>
-        public Cable AddCable(int nodeA, int nodeB, int pairs, float length)
+        public Cable AddCable(int nodeA, int nodeB, int pairs)
         {
             if (!_nodes.ContainsKey(nodeA))
                 throw new ArgumentException($"Unknown node #{nodeA}.", nameof(nodeA));
@@ -64,10 +64,8 @@ namespace SpaghettiWires.Network
                 throw new ArgumentException($"Cable cannot connect node #{nodeA} to itself.", nameof(nodeB));
             if (pairs < 1)
                 throw new ArgumentOutOfRangeException(nameof(pairs), pairs, "Cable needs at least one pair.");
-            if (float.IsNaN(length) || length < 0f)
-                throw new ArgumentOutOfRangeException(nameof(length), length, "Length must be non-negative.");
 
-            var cable = new Cable(_nextCableId++, nodeA, nodeB, pairs, length);
+            var cable = new Cable(_nextCableId++, nodeA, nodeB, pairs);
             _cables.Add(cable.Id, cable);
             _cablesByNode[nodeA].Add(cable.Id);
             _cablesByNode[nodeB].Add(cable.Id);
