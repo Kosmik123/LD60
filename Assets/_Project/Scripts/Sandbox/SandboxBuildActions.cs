@@ -27,13 +27,8 @@ namespace SpaghettiWires.Sandbox
         [SerializeField] private float cableSpan = 3f;
         [SerializeField] private float trunkSpan = 2.5f;
 
-        [Header("Słupy")]
-        [Tooltip("Liczba miejsc na kable na słupie (GDD 3.3, mały słup).")]
-        [SerializeField] private int poleSlots = 5;
-
         private readonly Dictionary<Vector2Int, int> _nodeByCell = new Dictionary<Vector2Int, int>();
         private readonly Dictionary<int, Vector2Int> _cellByNode = new Dictionary<int, Vector2Int>();
-        private readonly Dictionary<int, NodeVisualKind> _kindByNode = new Dictionary<int, NodeVisualKind>();
         private readonly Dictionary<int, (int from, int to, int pairs)> _cables = new Dictionary<int, (int from, int to, int pairs)>();
         private int _nextNodeId = 1;
         private int _nextCableId = 1;
@@ -76,8 +71,14 @@ namespace SpaghettiWires.Sandbox
             float span = pairs > 1 ? trunkSpan : cableSpan;
             if (MapGrid.CellDistance(_cellByNode[fromNodeId], _cellByNode[toNodeId]) > span)
                 return BuildCheck.Fail("Za daleko. Postaw słup po drodze.");
+            if (!CanAttach(fromNodeId, pairs) || !CanAttach(toNodeId, pairs))
+                return BuildCheck.Fail("Słup jest pełny. Postaw kolejny słup.");
+            if (!views.IsCablePathClear(fromNodeId, toNodeId, NextCableId))
+                return BuildCheck.Fail("Kabel przecina budynek.");
             return BuildCheck.Ok;
         }
+
+        public int NextCableId => _nextCableId;
 
         public void LayCable(int fromNodeId, int toNodeId, int pairs)
         {
@@ -95,28 +96,27 @@ namespace SpaghettiWires.Sandbox
         // Sandbox nie ma awarii, więc wszystkie żyły zawsze działają.
         public int MeasureWorkingPairs(int cableId) => _cables[cableId].pairs;
 
+        // Pojemność i punkty przyczepu zna model węzła (CableAttachments), więc sandbox tylko go pyta.
         public bool TryGetSlotUsage(int nodeId, out int used, out int capacity)
         {
             used = 0;
-            capacity = poleSlots;
-            if (!_kindByNode.TryGetValue(nodeId, out var kind) || kind != NodeVisualKind.Pole)
+            capacity = 0;
+            if (!views.TryGetNode(nodeId, out var node) || !node.Attachments.Slots.HasCapacityLimit)
                 return false;
 
-            // Kabel zajmuje √(liczba żył) miejsc (GDD 3.3).
-            foreach (var (from, to, pairs) in _cables.Values)
-            {
-                if (from == nodeId || to == nodeId)
-                    used += Mathf.RoundToInt(Mathf.Sqrt(pairs));
-            }
+            used = node.Attachments.Slots.Used;
+            capacity = node.Attachments.Slots.Capacity;
             return true;
         }
+
+        private bool CanAttach(int nodeId, int pairs) =>
+            views.TryGetNode(nodeId, out var node) && node.Attachments.CanAttach(pairs);
 
         private void AddNode(NodeVisualKind kind, Vector2Int cell)
         {
             int id = _nextNodeId++;
             _nodeByCell.Add(cell, id);
             _cellByNode.Add(id, cell);
-            _kindByNode.Add(id, kind);
             views.SpawnNode(id, kind, cell);
         }
     }

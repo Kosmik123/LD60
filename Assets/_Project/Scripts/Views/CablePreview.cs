@@ -10,7 +10,7 @@ namespace SpaghettiWires.Views
         private const int Segments = 16;
 
         [SerializeField] private float widthPerSqrtPair = 0.06f;
-        [SerializeField] private float sagPerMeter = 0.05f;
+        [SerializeField] private float sagPerMeter = CableCurve.DefaultSagPerMeter;
 
         private readonly List<Vector3> _points = new List<Vector3>();
         private LineRenderer _line;

@@ -31,6 +31,11 @@ namespace SpaghettiWires.EditorTools
         private const float InsulatorDiameter = 0.07f;
         private const float InsulatorHeight = 0.12f;
 
+        // Pojemność słupa: 4 izolatory po 2 kable. Magistrala zajmuje jedno miejsce na izolatorze,
+        // ale √(liczba żył) miejsc pojemności (GDD 3.3).
+        private const int Capacity = 8;
+        private const int PlacesPerInsulator = 2;
+
         private static readonly Color WoodColor = new(0.40f, 0.27f, 0.16f);
         private static readonly Color InsulatorColor = new(0.85f, 0.87f, 0.82f);
 
@@ -81,8 +86,9 @@ namespace SpaghettiWires.EditorTools
             collider.height = PoleHeight;
             collider.radius = 0.4f;
 
-            // Słup jest widokiem węzła sieci: kable zaczepia na punktach CableAnchor_N.
+            // Słup jest widokiem węzła sieci: kable zaczepia losowo na wolnych punktach CableAnchor_N.
             root.AddComponent<NodeView>();
+            root.GetComponent<CableAttachments>().Configure(CableAttachments.AnchorChoice.Random, Capacity, PlacesPerInsulator);
 
             EnsureFolder(Path.GetDirectoryName(PrefabPath));
             PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);

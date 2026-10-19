@@ -35,6 +35,12 @@ namespace SpaghettiWires.Tools
         BuildCheck CheckCable(int fromNodeId, int toNodeId, int pairs);
         void LayCable(int fromNodeId, int toNodeId, int pairs);
 
+        /// <summary>
+        /// Id, które dostanie kabel położony jako następny. Gra jest dla jednego gracza, więc to Id kabla,
+        /// który gracz właśnie przeciąga. Podgląd używa go, żeby pokazać punkt przyczepu, w którym kabel wyląduje.
+        /// </summary>
+        int NextCableId { get; }
+
         void RemoveCable(int cableId);
 
         /// <summary>Miernik: liczba sprawnych żył kabla.</summary>
