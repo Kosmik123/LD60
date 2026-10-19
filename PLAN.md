@@ -10,10 +10,11 @@ Kolejność prac nad grą na podstawie [GDD.md](GDD.md) i [TECH.md](TECH.md). Pl
 - ✅ Kamera izometryczna `IsometricCameraController` (`develop`)
 - ✅ Model drewnianego słupa, używany jako słup w scenie gry
 - ✅ Rdzeń sieci (etap 1), przepisany na model z TECH
-- ✅ Scena gry, widoki i narzędzia (etapy 3–4), na razie na tymczasowym `SandboxBuildActions`, **bez połączenia z rdzeniem sieci**
+- ✅ Scena gry, widoki i narzędzia (etapy 3–4). Akcje gracza obsługuje tymczasowy `SandboxBuildActions`, który prowadzi już prawdziwą sieć `PhoneNetwork`
+- ✅ Symulacja rozmów z widocznymi rozmowami (etap 5)
 - ✅ UI: pasek narzędzi, HUD, okienko zajętości słupa, ekran przegranej
 - ✅ Ekonomia: pieniądze, reputacja, przegrana i płacenie za budowę (część etapu 6)
-- ⚠️ Następny ważny krok: reguły budowy (etap 2) na `PhoneNetwork` zamiast sandboxa, potem symulacja rozmów (etap 5)
+- ⚠️ Następny ważny krok: podpiąć wyniki rozmów do ekonomii (etap 6), co zamyka kamień B. Potem reguły budowy zamiast sandboxa (etap 2)
 - ✅ TECH zawiera √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę
 
 ---
@@ -69,7 +70,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 ### 2. Reguły budowy (ok. 2–3 h)
 - [ ] Mapa: `NodeId → pole siatki` oraz klasa słupa.
 - [ ] Walidacja: zasięg kabla, miejsca na słupie (√ liczby żył), pieniądze.
-  - Tymczasowo: zasięg, miejsca i kolizje z budynkami w `SandboxBuildActions`, pieniądze w `PaidBuildActions`. Reguły mają zastąpić sandbox i korzystać z `PhoneNetwork`.
+  - Tymczasowo: zasięg, miejsca i kolizje z budynkami w `SandboxBuildActions` (już na `PhoneNetwork`, mapa `NodeId → pole` też jest w sandboxie), pieniądze w `PaidBuildActions`. Brakuje osobnej warstwy reguł i klas słupów.
 - [ ] Podgląd walidacji bez zmiany stanu (do czerwonego lub zielonego kabla).
 - [ ] Wszystkie liczby w jednym `ScriptableObject` z ustawieniami gry.
 
@@ -78,7 +79,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] `NodeView`: dom (na razie prosty sześcian), słup (prefab `WoodenPole`), centrala.
 - [x] `CableView`: kabel ze zwisem (krzywa łańcuchowa) od punktu zaczepienia do punktu zaczepienia.
 - [ ] Tworzenie i usuwanie widoków w reakcji na zdarzenia sieci, słownik `Id → widok`.
-  - Słownik `Id → widok` jest (`ViewRegistry`), ale widoki tworzy sandbox, a nie zdarzenia `PhoneNetwork`.
+  - Słownik `Id → widok` jest (`ViewRegistry`) i Id pochodzą z `PhoneNetwork`, ale widoki tworzy sandbox wprost, a nie w reakcji na zdarzenia sieci.
 
 ### 4. Input i narzędzia (ok. 4–5 h)
 - [x] Pasek narzędzi i klawisze 1–5 (`ToolbarView`, `ToolController`).
@@ -89,12 +90,13 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] Okienko nad słupem z zajętością miejsc, np. `7/12` (`PoleTooltipView`). Dane na razie z sandboxa przez `IBuildActions.TryGetSlotUsage`.
 
 > **Kamień milowy A:** można stawiać słupy i łączyć domy kablami. Nic jeszcze nie dzwoni.
-> Osiągnięty na sandboxie. Do pełnego zaliczenia brakuje podpięcia pod `PhoneNetwork` (etap 2 i ostatni punkt etapu 3).
+> Osiągnięty: budowa działa na prawdziwej sieci przez sandbox. Porządki techniczne (reguły zamiast sandboxa, widoki ze zdarzeń sieci) nie blokują kolejnych etapów.
 
 ### 5. Symulacja rozmów (ok. 4 h)
-- [ ] Generator rozmów: kto do kogo dzwoni i jak często (rośnie z czasem).
-- [ ] Czas trwania rozmowy, rozpoczynanie i kończenie przez warstwę ruchu.
-- [ ] **Widoczność:** świecące kable trwającej rozmowy, ikonka „zajęte” nad domem.
+- [x] Generator rozmów: kto do kogo dzwoni i jak często (rośnie z czasem i liczbą domów). `CallSimulation`, `CallSettings`, `CallSimulationRunner`.
+- [x] Czas trwania rozmowy, rozpoczynanie i kończenie przez warstwę ruchu. Wyniki jako zdarzenia: `CallConnected`, `CallCompleted`, `CallFailed` (zajęte, brak drogi), `CallDropped`.
+- [x] **Widoczność:** świecące kable trwającej rozmowy, ikonka „zajęte” nad domem (`CallTrafficView`, `CallIndicatorsView`).
+- [x] Wymuszanie rozmów do testów (`CallDebugInput`, tylko edytor i development build).
 
 ### 6. Ekonomia i zadowolenie (ok. 3 h)
 - [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
