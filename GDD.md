@@ -89,11 +89,13 @@ Sieć to węzły (domy, słupy, centrala) połączone kablami. **Każdy słup dz
 |---|---|
 | **Dom / budynek** | Węzeł sieci. Tu zaczynają się i kończą rozmowy. |
 | **Słup** | Węzeł, który przełącza rozmowy. Ma limit kabli zależny od klasy (3.3). |
-| **Centrala** | „Super-słup”: przełącza jak słup, ale ma **nieograniczoną** liczbę kabli. Słup nigdy nie staje się centralą. |
+| **Centrala** | „Super-słup”: przełącza jak słup, ale ma **nieograniczoną** liczbę kabli. Słup nigdy nie staje się centralą. **Nie ma jej na początku gry**: gracz buduje ją sam w miarę rozwoju sieci. |
 | **Kabel** | Łączy dwa węzły. Ma 1 żyłę, czyli przenosi jedną rozmowę naraz. |
 | **Magistrala** | Kabel z wieloma żyłami (4, 9, 16): wiele rozmów naraz. Na słupie zajmuje tyle miejsc, ile wynosi **pierwiastek z liczby żył** (3.3). |
 
-**Łączenie budynek–budynek jest dozwolone.** Można zrobić łańcuch dom → dom → dom. Na początku to tanie i wygodne. Czy dom przekazuje rozmowy innych (i czy nie zastąpi przez to słupów), ustalimy w testach. Możliwe ograniczenia: do domu nie da się podłączyć magistrali albo kable między domami mają krótszy zasięg.
+**Łączenie budynek–budynek jest dozwolone.** Można zrobić łańcuch dom → dom → dom. Na początku to tanie i wygodne.
+
+**Dom przekazuje rozmowy innych, ale blokuje przy tym sam siebie.** Gdy rozmowa przechodzi przez dom, jego linia jest zajęta, więc mieszkańcy tego domu nie mogą w tym czasie ani dzwonić, ani odbierać. Dom przenosi naraz **jedną rozmowę**: swoją albo cudzą. Dzięki temu dom-hub nie zastąpi słupa: im więcej rozmów przez niego idzie, tym częściej jego mieszkańcy słyszą „zajęte” i tym bardziej są niezadowoleni.
 
 ### 3.2 Kable
 - **Maksymalna długość odcinka** między dwoma punktami zaczepienia. Dłuższa trasa wymaga postawienia słupa.
@@ -266,7 +268,8 @@ Przeniesiona do [TECH.md](TECH.md).
 ## 7. Zakres na jam
 
 ### Wersja minimalna (MVP, pierwsze 24–36 h)
-- [ ] Mapa na siatce: centrala i kilka budynków
+- [ ] Mapa na siatce: kilka budynków na start (bez centrali)
+- [ ] Budowanie centrali przez gracza
 - [ ] Kamera izometryczna: przesuwanie, obrót, zoom
 - [ ] Prowadzenie kabli z limitem długości odcinka i zwisem
 - [ ] Stawianie słupów z limitem kabli (na start jedna klasa)
@@ -294,7 +297,7 @@ Przeniesiona do [TECH.md](TECH.md).
 | Plątanina staje się nieczytelna i frustrująca | Widoczne rozmowy, podświetlanie tras, kolory typów kabli |
 | Gracz nie rozumie, dlaczego jest „zajęte” | Pokazywanie zajętości kabli i słupów, czytelny komunikat przy nieudanej rozmowie |
 | Redundancja ukrywa awarie tak dobrze, że sprzątanie nie ma sensu | Balans: awarie zmniejszają przepustowość i wydłużają trasy, co obniża zadowolenie |
-| Domy zastępują słupy | Ograniczenia dla domów (brak magistral, krótszy zasięg), do ustalenia w testach |
+| Domy zastępują słupy | Dom przenosi naraz tylko jedną rozmowę i blokuje wtedy sam siebie. W razie potrzeby dodatkowe ograniczenia (brak magistral, krótszy zasięg) |
 | Usuwanie kabli za tanie (zero chaosu) albo za drogie (słupy zawsze zapchane) | Balans kosztu czasu i pieniędzy usuwania, testy od pierwszego dnia |
 | Magistrala zawsze lepsza, zwykły kabel zbędny | Magistrala zajmuje √żył miejsc na słupie. W razie potrzeby: cena, zasięg, brak podłączenia do domu |
 | Za dużo systemów na 72 h | Najpierw MVP, rozszerzenia dopiero potem |
@@ -302,15 +305,15 @@ Przeniesiona do [TECH.md](TECH.md).
 
 ---
 
-## 9. Decyzje i otwarte pytania
-
-### Rozstrzygnięte
+## 9. Decyzje
 | Pytanie | Decyzja |
 |---|---|
 | Gra bez końca czy etapy z celem? | **Bez końca.** Łatwiej zrobić. Etapy być może później. |
 | Czy budynki można łączyć łańcuchem? | **Tak.** |
 | Jak działa sieć? | **Każdy słup sam przełącza rozmowy.** Rozmowa szuka najkrótszej drogi z wolnymi żyłami i zajmuje je na czas trwania. Bez projektowania wnętrza słupów. |
+| Czy dom przekazuje rozmowy innych? | **Tak**, ale blokuje przy tym sam siebie: dom przenosi naraz jedną rozmowę, swoją albo cudzą. |
 | Rola centrali | **Super-słup** bez limitu kabli. Słup nigdy nie staje się centralą. |
+| Czy centrala stoi na mapie od początku? | **Nie.** Gracz buduje ją sam w miarę rozwoju sieci. |
 | Limit kabli na słupie | **Tak**, zależny od klasy słupa. Kabel zajmuje √(liczba żył) miejsc. Rozmiary magistral to kwadraty: 4, 9, 16. |
 | Ograniczenie długości trasy rozmowy | **Brak.** Długa trasa obniża jakość rozmowy i zadowolenie. |
 | Czy awarie mają być widoczne? | **Nie muszą.** Redundancja ukrywa awarie, co jest zaletą i źródłem chaosu. Miernik pozwala je znaleźć. |
@@ -319,7 +322,3 @@ Przeniesiona do [TECH.md](TECH.md).
 | Koszty i czasy akcji? | Ustalimy w testach, gdy będą gotowe mechaniki. |
 | Compo czy Jam? | **Jam** (72 h). Wolno używać gotowych modeli. |
 | Zasady LD dotyczące AI? | Nie ograniczają korzystania z AI. |
-
-### Otwarte
-- Czy dom przekazuje rozmowy innych, a jeśli tak, z jakimi ograniczeniami (brak magistral, krótszy zasięg)? Ustalimy w testach.
-- Czy centrala stoi na mapie od początku, czy gracz ją buduje?
