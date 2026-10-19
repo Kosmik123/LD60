@@ -8,7 +8,8 @@ using UnityEngine.InputSystem;
 namespace SpaghettiWires.Tools
 {
     /// <summary>
-    /// Wybór aktywnego narzędzia (klawisze 1–5, Esc, pasek narzędzi) i przekazywanie mu klatek.
+    /// Wybór aktywnego narzędzia (klawisze 1–4, Esc, pasek narzędzi) i przekazywanie mu klatek.
+    /// Klawisze: 1 kabel, 2 słup, 3 nożyce, 4 magistrala.
     /// Esc najpierw przerywa trwającą akcję, a dopiero drugie Esc odkłada narzędzie.
     /// </summary>
     public sealed class ToolController : MonoBehaviour
@@ -92,11 +93,11 @@ namespace SpaghettiWires.Tools
             if (keyboard == null)
                 return;
 
+            // Miernika nie ma w MVP: narzędzie zostaje w kodzie, ale nie da się go wybrać.
             if (keyboard.digit1Key.wasPressedThisFrame) Select(ToolType.Cable);
-            if (keyboard.digit2Key.wasPressedThisFrame) Select(ToolType.Trunk);
-            if (keyboard.digit3Key.wasPressedThisFrame) Select(ToolType.Pole);
-            if (keyboard.digit4Key.wasPressedThisFrame) Select(ToolType.Meter);
-            if (keyboard.digit5Key.wasPressedThisFrame) Select(ToolType.Scissors);
+            if (keyboard.digit2Key.wasPressedThisFrame) Select(ToolType.Pole);
+            if (keyboard.digit3Key.wasPressedThisFrame) Select(ToolType.Scissors);
+            if (keyboard.digit4Key.wasPressedThisFrame) Select(ToolType.Trunk);
 
             if (keyboard.escapeKey.wasPressedThisFrame)
                 HandleEscape();

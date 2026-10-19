@@ -17,10 +17,9 @@ namespace SpaghettiWires.UI
         private static readonly (ToolType type, string key, string label)[] Buttons =
         {
             (ToolType.Cable, "1", "Cable"),
-            (ToolType.Trunk, "2", "Trunk"),
-            (ToolType.Pole, "3", "Pole"),
-            (ToolType.Meter, "4", "Meter"),
-            (ToolType.Scissors, "5", "Cutters"),
+            (ToolType.Pole, "2", "Pole"),
+            (ToolType.Scissors, "3", "Cutters"),
+            (ToolType.Trunk, "4", "Trunk"),
         };
 
         [SerializeField] private ToolController tools;

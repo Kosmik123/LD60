@@ -1,6 +1,9 @@
 namespace SpaghettiWires.Tools
 {
-    /// <summary>Narzędzia gracza w kolejności z GDD (rozdział 4), co odpowiada klawiszom 1–5.</summary>
+    /// <summary>
+    /// Narzędzia gracza. Kolejność na pasku i klawisze ustala <see cref="ToolController"/>.
+    /// Miernika nie ma w MVP, więc nie da się go wybrać.
+    /// </summary>
     public enum ToolType
     {
         None,
