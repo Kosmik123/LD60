@@ -247,4 +247,10 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `HudView`: pieniądze i reputacja (lewy górny róg), czas (prawy górny). Tylko wyświetla, wartości ustawia się metodami `Set*`.
   - `PoleTooltipView`: okienko z zajętością miejsc nad słupem pod kursorem, dane z `IBuildActions.TryGetSlotUsage`.
   - `GameOverView`: ekran przegranej, domyślnie ukryty. `Show(czas, powód)` go pokazuje, przycisk wczytuje scenę od nowa.
+- **Ekonomia** (`Assets/_Project/Scripts/Simulation/Economy.cs`, assembly `SpaghettiWires.Simulation`, bez zależności od Unity):
+  - `Money` (int) i `Reputation` (0–1), wartości startowe w konstruktorze.
+  - `CanAfford` i `TrySpend` dla zakupów gracza: gdy go nie stać, nic się nie zmienia. `Earn` dla wpływów.
+  - `Charge` dla wydatków przymusowych (utrzymanie, kary). Może zejść poniżej zera, co jest przegraną.
+  - `ChangeReputation(delta)` w granicach 0–1. Reputacja 0 to przegrana.
+  - Zdarzenia `MoneyChanged`, `ReputationChanged` i `Lost(LossReason)`, to ostatnie tylko raz.
 - Do zrobienia: reguły, symulacja, widoki.

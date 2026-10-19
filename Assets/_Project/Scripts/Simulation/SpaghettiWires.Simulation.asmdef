@@ -1,0 +1,14 @@
+{
+    "name": "SpaghettiWires.Simulation",
+    "rootNamespace": "SpaghettiWires.Simulation",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

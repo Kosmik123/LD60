@@ -4,7 +4,8 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "SpaghettiWires.Networking"
+        "SpaghettiWires.Networking",
+        "SpaghettiWires.Simulation"
     ],
     "includePlatforms": [
         "Editor"

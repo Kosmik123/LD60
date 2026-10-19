@@ -92,6 +92,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [ ] **Widoczność:** świecące kable trwającej rozmowy, ikonka „zajęte” nad domem.
 
 ### 6. Ekonomia i zadowolenie (ok. 3 h)
+- [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
 - [ ] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
