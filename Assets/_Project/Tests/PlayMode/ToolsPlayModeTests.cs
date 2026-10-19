@@ -97,7 +97,8 @@ namespace SpaghettiWires.Tests
         {
             var houses = _views.Nodes.ToArray();
             Assert.AreEqual(2, houses.Length);
-            Assert.IsTrue(_sandbox.CheckCable(houses[0].Id, houses[1].Id, 1).IsValid, "Start houses can be connected without a pole");
+            var check = _sandbox.CheckCable(houses[0].Id, houses[1].Id, 1);
+            Assert.IsTrue(check.IsValid, $"Start houses can be connected without a pole, but: {check.Reason}");
             yield break;
         }
 

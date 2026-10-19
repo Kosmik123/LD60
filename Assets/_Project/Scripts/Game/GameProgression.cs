@@ -25,8 +25,12 @@ namespace SpaghettiWires.Game
         [SerializeField] private Serialized<IHouseSpawner> houses;
 
         [Header("Start")]
-        [Tooltip("Pola domów na start. Muszą być w zasięgu zwykłego kabla, bo na starcie gracz ma tylko Kabel.")]
-        [SerializeField] private List<Vector2Int> startHouseCells = new List<Vector2Int> { new Vector2Int(11, 12), new Vector2Int(14, 12) };
+        // Obrót domu zależy od jego Id, a domy startowe to zawsze węzły 1 i 2: dom 1 ma uchwyt na północnej ścianie,
+        // dom 2 na zachodniej. Dlatego dom 2 stoi na północny wschód od domu 1, a kabel między uchwytami
+        // nie przecina żadnego z domów. Pilnuje tego test PlayMode Scene_StartsWithTwoHousesInCableReach.
+        [Tooltip("Pola domów na start. Muszą być w zasięgu zwykłego kabla, bo na starcie gracz ma tylko Kabel, " +
+            "a uchwyty domów (zależne od ich Id) muszą patrzeć w stronę drugiego domu.")]
+        [SerializeField] private List<Vector2Int> startHouseCells = new List<Vector2Int> { new Vector2Int(11, 12), new Vector2Int(13, 14) };
         [Tooltip("Narzędzia dostępne od początku gry.")]
         [SerializeField] private List<ToolType> startTools = new List<ToolType> { ToolType.Cable };
 

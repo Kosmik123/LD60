@@ -1807,7 +1807,7 @@ MonoBehaviour:
       serializedObject: {fileID: 1296632933}
   startHouseCells:
   - {x: 11, y: 12}
-  - {x: 14, y: 12}
+  - {x: 13, y: 14}
   startTools:
   - 1
   firstHouseDelay: 30
