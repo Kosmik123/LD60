@@ -67,6 +67,10 @@ namespace SpaghettiWires.CameraControl
         private float _yawVelocity;
         private float _distanceVelocity;
 
+        // Zanim mysz się poruszy, Input System podaje jej pozycję (0, 0), czyli róg ekranu.
+        // Bez tej flagi przewijanie krawędzią od razu odsuwało kamerę od punktu startowego.
+        private bool _pointerMoved;
+
         public Vector3 Focus => _focus;
         public float Yaw => _yaw;
         public float Distance => _distance;
@@ -168,8 +172,10 @@ namespace SpaghettiWires.CameraControl
 
             var mouse = Mouse.current;
             bool rotatingOrDragging = mouse != null && (mouse.rightButton.isPressed || mouse.middleButton.isPressed);
+            if (mouse != null && mouse.delta.ReadValue() != Vector2.zero)
+                _pointerMoved = true;
 
-            if (edgeScrolling && mouse != null && !rotatingOrDragging && Application.isFocused && IsPointerInsideScreen(mouse))
+            if (edgeScrolling && _pointerMoved && mouse != null && !rotatingOrDragging && Application.isFocused && IsPointerInsideScreen(mouse))
             {
                 Vector2 p = mouse.position.ReadValue();
                 if (p.x <= edgeSize) input.x -= 1f;
