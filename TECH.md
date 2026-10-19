@@ -211,4 +211,8 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 - **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Network/` (assembly `SpaghettiWires.Network`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Network/`.
   - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
-- Do zrobienia: stan techniczny, ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
+- **Stan techniczny** (4.1, 4.4): `CableCondition` z referencją do struktury (tylko odczyt i zdarzenie usunięcia kabla).
+  - `Damage(cableId, n)` i `Break(cableId)` dodają uszkodzone żyły, najwyżej do `Pairs`. Zdarzenie `PairsDamaged` tylko przy zmianie.
+  - `GetWorkingPairs` to wynik pomiaru miernikiem. `DamagedCableIds` przyda się np. do wskaźnika chaosu.
+  - Po usunięciu kabla jego wpis znika.
+- Do zrobienia: ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
