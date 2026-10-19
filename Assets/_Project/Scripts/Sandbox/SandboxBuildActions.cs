@@ -40,8 +40,8 @@ namespace SpaghettiWires.Sandbox
         private CableNetwork Structure => Network.Structure;
 
         /// <summary>
-        /// Pierwszy dom staje na środku mapy, każdy następny w zasięgu zwykłego kabla od losowego istniejącego domu,
-        /// więc zwykle da się go podłączyć bez słupa.
+        /// Dom staje w zasięgu zwykłego kabla od losowego istniejącego domu, więc zwykle da się go podłączyć bez słupa.
+        /// Pierwszy dom na mapie staje na środku.
         /// </summary>
         public bool TrySpawnHouse()
         {
@@ -74,6 +74,15 @@ namespace SpaghettiWires.Sandbox
             }
 
             return false;
+        }
+
+        public bool TrySpawnHouse(Vector2Int cell)
+        {
+            if (!grid.Grid.Contains(cell) || _nodeByCell.ContainsKey(cell))
+                return false;
+
+            AddNode(NodeVisualKind.House, cell);
+            return true;
         }
 
         public BuildCheck CheckPole(Vector2Int cell)

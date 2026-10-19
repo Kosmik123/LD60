@@ -1805,7 +1805,11 @@ MonoBehaviour:
   houses:
     serializedValue:
       serializedObject: {fileID: 1296632933}
-  startHouses: 2
+  startHouseCells:
+  - {x: 11, y: 12}
+  - {x: 14, y: 12}
+  startTools:
+  - 1
   firstHouseDelay: 30
   houseIntervalFactor: 0.9
   minHouseInterval: 8

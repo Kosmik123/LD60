@@ -14,13 +14,13 @@ namespace SpaghettiWires.UI
     {
         private const string SelectedClass = "tool-button--selected";
 
-        private static readonly (ToolType type, string key, string label)[] Buttons =
+        private static readonly ToolType[] Buttons =
         {
-            (ToolType.Cable, "1", "Cable"),
-            (ToolType.Trunk, "2", "Trunk"),
-            (ToolType.Pole, "3", "Pole"),
-            (ToolType.Meter, "4", "Meter"),
-            (ToolType.Scissors, "5", "Cutters"),
+            ToolType.Cable,
+            ToolType.Trunk,
+            ToolType.Pole,
+            ToolType.Meter,
+            ToolType.Scissors,
         };
 
         [SerializeField] private ToolController tools;
@@ -59,15 +59,15 @@ namespace SpaghettiWires.UI
             bar.AddToClassList("toolbar");
             hud.Add(bar);
 
-            foreach (var (type, key, label) in Buttons)
+            foreach (var type in Buttons)
             {
                 var button = new Button(() => tools.Select(tools.Current == type ? ToolType.None : type));
                 button.AddToClassList("tool-button");
 
-                var keyLabel = new Label(key);
+                var keyLabel = new Label(type.Key());
                 keyLabel.AddToClassList("tool-button__key");
                 button.Add(keyLabel);
-                button.Add(new Label(label));
+                button.Add(new Label(type.Label()));
 
                 button.RegisterCallback<PointerEnterEvent>(_ => SetHovered(type));
                 button.RegisterCallback<PointerLeaveEvent>(_ => SetHovered(ToolType.None));
@@ -106,15 +106,8 @@ namespace SpaghettiWires.UI
 
         private void OnToolUnlocked(ToolType type)
         {
-            if (!_buttons.TryGetValue(type, out var button))
-                return;
-
-            button.SetEnabled(true);
-            foreach (var (buttonType, key, label) in Buttons)
-            {
-                if (buttonType == type)
-                    OnMessagePosted($"New tool: {label} ({key})");
-            }
+            if (_buttons.TryGetValue(type, out var button))
+                button.SetEnabled(true);
         }
 
         private void SetHovered(ToolType type)

@@ -25,16 +25,10 @@ namespace SpaghettiWires.Tools
         [Tooltip("Liczba żył magistrali (GDD 3.3: 4, 9 albo 16).")]
         [SerializeField] private int trunkPairs = 4;
 
-        [Header("Postęp")]
-        [Tooltip("Narzędzia dostępne od początku gry. Pozostałe trzeba odblokować.")]
-        [SerializeField] private List<ToolType> initiallyUnlocked = new List<ToolType> { ToolType.Cable };
-
         private readonly Dictionary<ToolType, ITool> _tools = new Dictionary<ToolType, ITool>();
         private ToolContext _context;
-        private HashSet<ToolType> _unlocked;
-
-        // Leniwie, bo pasek narzędzi może pytać o blokady w OnEnable, przed Awake tego komponentu.
-        private HashSet<ToolType> Unlocked => _unlocked ??= new HashSet<ToolType>(initiallyUnlocked);
+        // Na starcie wszystko zablokowane. Odblokowuje progresja gry.
+        private readonly HashSet<ToolType> _unlocked = new HashSet<ToolType>();
 
         public ToolType Current { get; private set; } = ToolType.None;
 
@@ -83,12 +77,12 @@ namespace SpaghettiWires.Tools
         }
 
         /// <summary>Czy gracz może wybrać to narzędzie. Odłożenie narzędzia (None) jest zawsze dostępne.</summary>
-        public bool IsUnlocked(ToolType type) => type == ToolType.None || Unlocked.Contains(type);
+        public bool IsUnlocked(ToolType type) => type == ToolType.None || _unlocked.Contains(type);
 
         /// <summary>Udostępnia narzędzie graczowi. Ponowne odblokowanie nic nie robi.</summary>
         public void Unlock(ToolType type)
         {
-            if (type == ToolType.None || !Unlocked.Add(type))
+            if (type == ToolType.None || !_unlocked.Add(type))
                 return;
 
             ToolUnlocked?.Invoke(type);

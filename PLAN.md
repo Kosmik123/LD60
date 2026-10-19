@@ -124,7 +124,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 
 ### 8. Rozwój miasta i centrala (ok. 3 h)
 - [x] Generator nowych budynków na wolnych polach, z rosnącym tempem (`GameProgression`, na razie domy stawia sandbox przez `IHouseSpawner`).
-- [x] Startowa mapa: dwa domy w zasięgu kabla, bez centrali.
+- [x] Startowa mapa: dwa domy na stałych polach w zasięgu kabla, bez centrali.
 - [ ] Budowanie centrali przez gracza (super-słup bez limitu, drogi).
 
 > **Kamień milowy C:** pełne MVP z GDD, czyli gra bez końca z rosnącym tempem.

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using Bipolar;
-using SpaghettiWires.Simulation;
 using SpaghettiWires.Tools;
 using UnityEngine;
 
 namespace SpaghettiWires.Game
 {
     /// <summary>
-    /// Postęp rozgrywki w jednym miejscu: domy na start, pojawianie się nowych domów (coraz szybciej, GDD 3.7)
+    /// Postęp rozgrywki w jednym miejscu: domy i narzędzia na start, pojawianie się nowych domów (coraz szybciej, GDD 3.7)
     /// i odblokowywanie narzędzi w czasie gry. Czas bierze z <see cref="GameSession"/>, więc po przegranej postęp staje.
     /// </summary>
     public sealed class GameProgression : MonoBehaviour
@@ -25,8 +24,13 @@ namespace SpaghettiWires.Game
         [SerializeField] private ToolController tools;
         [SerializeField] private Serialized<IHouseSpawner> houses;
 
-        [Header("Domy")]
-        [SerializeField] private int startHouses = 2;
+        [Header("Start")]
+        [Tooltip("Pola domów na start. Muszą być w zasięgu zwykłego kabla, bo na starcie gracz ma tylko Kabel.")]
+        [SerializeField] private List<Vector2Int> startHouseCells = new List<Vector2Int> { new Vector2Int(11, 12), new Vector2Int(14, 12) };
+        [Tooltip("Narzędzia dostępne od początku gry.")]
+        [SerializeField] private List<ToolType> startTools = new List<ToolType> { ToolType.Cable };
+
+        [Header("Nowe domy")]
         [Tooltip("Po ilu sekundach gry pojawia się pierwszy nowy dom.")]
         [SerializeField] private float firstHouseDelay = 30f;
         [Tooltip("Mnożnik odstępu po każdym nowym domu. Mniej niż 1: miasto rośnie coraz szybciej.")]
@@ -35,7 +39,7 @@ namespace SpaghettiWires.Game
         [SerializeField] private float minHouseInterval = 8f;
 
         [Header("Narzędzia")]
-        [Tooltip("Kiedy odblokowują się narzędzia. Kabel jest dostępny od początku (ToolController).")]
+        [Tooltip("Kiedy odblokowują się kolejne narzędzia.")]
         [SerializeField] private List<ToolUnlock> toolUnlocks = new List<ToolUnlock>
         {
             new ToolUnlock { tool = ToolType.Pole, time = 45f },
@@ -58,8 +62,16 @@ namespace SpaghettiWires.Game
 
         private void Start()
         {
-            for (int i = 0; i < startHouses; i++)
-                SpawnHouse();
+            foreach (var cell in startHouseCells)
+            {
+                if (houses.Value.TrySpawnHouse(cell))
+                    HouseSpawned?.Invoke();
+                else
+                    Debug.LogWarning($"[GameProgression] Start house cell {cell} is outside the map or taken.", this);
+            }
+
+            foreach (var tool in startTools)
+                tools.Unlock(tool);
 
             _houseInterval = firstHouseDelay;
             _nextHouseTime = firstHouseDelay;
@@ -79,7 +91,10 @@ namespace SpaghettiWires.Game
             foreach (var unlock in toolUnlocks)
             {
                 if (time >= unlock.time && !tools.IsUnlocked(unlock.tool))
+                {
                     UnlockTool(unlock.tool);
+                    tools.PostMessage($"New tool: {unlock.tool.Label()} ({unlock.tool.Key()})");
+                }
             }
         }
 
