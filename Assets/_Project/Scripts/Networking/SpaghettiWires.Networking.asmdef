@@ -1,0 +1,14 @@
+{
+    "name": "SpaghettiWires.Networking",
+    "rootNamespace": "SpaghettiWires.Networking",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
