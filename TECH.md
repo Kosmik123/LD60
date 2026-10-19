@@ -242,4 +242,9 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `EndCall` zwalnia żyły i linie. Uszkodzenie żył lub usunięcie kabla zrywa najnowsze rozmowy (`CallDropped`).
   - Zajętość: `GetBusyPairs`, `GetFreePairs`, `GetNodeLoad` oraz zdarzenia `CableLoadChanged`, `NodeLoadChanged`.
 - **Fasada** `PhoneNetwork`: tworzy trzy warstwy we właściwej kolejności i udostępnia je jako `Structure`, `Condition`, `Traffic`. Nie powiela ich operacji.
+- **UI** (`Assets/_Project/Scripts/UI/`, UI Toolkit, elementy tworzone w kodzie, wygląd w `Assets/_Project/UI/*.uss`). Każdy widok ma własny `UIDocument` na wspólnym `PanelSettings`.
+  - `ToolbarView`: pasek narzędzi na dole i linia komunikatów.
+  - `HudView`: pieniądze i reputacja (lewy górny róg), czas (prawy górny). Tylko wyświetla, wartości ustawia się metodami `Set*`.
+  - `PoleTooltipView`: okienko z zajętością miejsc nad słupem pod kursorem, dane z `IBuildActions.TryGetSlotUsage`.
+  - `GameOverView`: ekran przegranej, domyślnie ukryty. `Show(czas, powód)` go pokazuje, przycisk wczytuje scenę od nowa.
 - Do zrobienia: reguły, symulacja, widoki.

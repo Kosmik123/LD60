@@ -2,7 +2,8 @@
     "name": "SpaghettiWires.UI",
     "rootNamespace": "SpaghettiWires.UI",
     "references": [
-        "SpaghettiWires.Tools"
+        "SpaghettiWires.Tools",
+        "SpaghettiWires.Views"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

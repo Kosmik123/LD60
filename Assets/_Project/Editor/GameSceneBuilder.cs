@@ -88,7 +88,6 @@ namespace SpaghettiWires.EditorTools
             SetField(pointer, "sceneCamera", camera);
             SetField(pointer, "grid", grid);
             SetField(pointer, "views", views);
-            SetList(pointer, "blockingDocuments", ui);
 
             var preview = CreateChild<CablePreview>(toolsObject.transform, "CablePreview");
             var previewLine = preview.GetComponent<LineRenderer>();
@@ -105,7 +104,21 @@ namespace SpaghettiWires.EditorTools
 
             var toolbar = ui.gameObject.AddComponent<ToolbarView>();
             SetField(toolbar, "tools", tools);
-            SetField(toolbar, "styleSheet", AssetDatabase.LoadAssetAtPath<StyleSheet>($"{UIFolder}/Toolbar.uss"));
+            SetField(toolbar, "styleSheet", LoadStyleSheet("Toolbar"));
+
+            var hud = CreateDocument<HudView>("HUD", panelSettings);
+            SetField(hud, "styleSheet", LoadStyleSheet("Hud"));
+
+            var poleTooltip = CreateDocument<PoleTooltipView>("PoleTooltip", panelSettings);
+            SetField(poleTooltip, "pointer", pointer);
+            SetField(poleTooltip, "tools", tools);
+            SetField(poleTooltip, "sceneCamera", camera);
+            SetField(poleTooltip, "styleSheet", LoadStyleSheet("Hud"));
+
+            // Nad resztą UI, żeby zasłona przykrywała też pasek narzędzi.
+            var gameOver = CreateDocument<GameOverView>("GameOver", panelSettings, sortingOrder: 10f);
+            SetField(gameOver, "styleSheet", LoadStyleSheet("GameOver"));
+            SetList(pointer, "blockingDocuments", ui, gameOver.GetComponent<UIDocument>());
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
@@ -306,6 +319,10 @@ namespace SpaghettiWires.EditorTools
             }
         }
 
+        private static StyleSheet LoadStyleSheet(string name) =>
+            AssetDatabase.LoadAssetAtPath<StyleSheet>($"{UIFolder}/{name}.uss")
+            ?? throw new InvalidOperationException($"Style sheet '{name}.uss' not found in {UIFolder}.");
+
         private static PanelSettings BuildPanelSettings()
         {
             string path = $"{UIFolder}/PanelSettings.asset";
@@ -327,6 +344,15 @@ namespace SpaghettiWires.EditorTools
         #endregion
 
         #region Helpers
+
+        /// <summary>Osobny UIDocument na wspólnym panelu. Wyższy <paramref name="sortingOrder"/> rysuje się na wierzchu.</summary>
+        private static T CreateDocument<T>(string name, PanelSettings panelSettings, float sortingOrder = 0f) where T : Component
+        {
+            var document = new GameObject(name).AddComponent<UIDocument>();
+            document.panelSettings = panelSettings;
+            document.sortingOrder = sortingOrder;
+            return document.gameObject.AddComponent<T>();
+        }
 
         private static T CreateChild<T>(Transform parent, string name) where T : Component
         {

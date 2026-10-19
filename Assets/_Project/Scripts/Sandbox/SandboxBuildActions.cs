@@ -27,9 +27,14 @@ namespace SpaghettiWires.Sandbox
         [SerializeField] private float cableSpan = 3f;
         [SerializeField] private float trunkSpan = 2.5f;
 
+        [Header("Słupy")]
+        [Tooltip("Liczba miejsc na kable na słupie (GDD 3.3, mały słup).")]
+        [SerializeField] private int poleSlots = 5;
+
         private readonly Dictionary<Vector2Int, int> _nodeByCell = new Dictionary<Vector2Int, int>();
         private readonly Dictionary<int, Vector2Int> _cellByNode = new Dictionary<int, Vector2Int>();
-        private readonly Dictionary<int, int> _pairsByCable = new Dictionary<int, int>();
+        private readonly Dictionary<int, NodeVisualKind> _kindByNode = new Dictionary<int, NodeVisualKind>();
+        private readonly Dictionary<int, (int from, int to, int pairs)> _cables = new Dictionary<int, (int from, int to, int pairs)>();
         private int _nextNodeId = 1;
         private int _nextCableId = 1;
 
@@ -77,24 +82,41 @@ namespace SpaghettiWires.Sandbox
         public void LayCable(int fromNodeId, int toNodeId, int pairs)
         {
             int id = _nextCableId++;
-            _pairsByCable.Add(id, pairs);
+            _cables.Add(id, (fromNodeId, toNodeId, pairs));
             views.SpawnCable(id, fromNodeId, toNodeId, pairs);
         }
 
         public void RemoveCable(int cableId)
         {
-            _pairsByCable.Remove(cableId);
+            _cables.Remove(cableId);
             views.RemoveCable(cableId);
         }
 
         // Sandbox nie ma awarii, więc wszystkie żyły zawsze działają.
-        public int MeasureWorkingPairs(int cableId) => _pairsByCable[cableId];
+        public int MeasureWorkingPairs(int cableId) => _cables[cableId].pairs;
+
+        public bool TryGetSlotUsage(int nodeId, out int used, out int capacity)
+        {
+            used = 0;
+            capacity = poleSlots;
+            if (!_kindByNode.TryGetValue(nodeId, out var kind) || kind != NodeVisualKind.Pole)
+                return false;
+
+            // Kabel zajmuje √(liczba żył) miejsc (GDD 3.3).
+            foreach (var (from, to, pairs) in _cables.Values)
+            {
+                if (from == nodeId || to == nodeId)
+                    used += Mathf.RoundToInt(Mathf.Sqrt(pairs));
+            }
+            return true;
+        }
 
         private void AddNode(NodeVisualKind kind, Vector2Int cell)
         {
             int id = _nextNodeId++;
             _nodeByCell.Add(cell, id);
             _cellByNode.Add(id, cell);
+            _kindByNode.Add(id, kind);
             views.SpawnNode(id, kind, cell);
         }
     }

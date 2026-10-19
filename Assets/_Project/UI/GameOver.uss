@@ -1,0 +1,57 @@
+.game-over {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.game-over__panel {
+    align-items: center;
+    padding: 28px 48px;
+    border-radius: 12px;
+    background-color: rgba(20, 20, 24, 0.95);
+}
+
+.game-over__title {
+    margin-bottom: 6px;
+    color: rgb(240, 240, 240);
+    font-size: 40px;
+    -unity-font-style: bold;
+}
+
+.game-over__reason {
+    margin-bottom: 18px;
+    color: rgb(200, 200, 210);
+    font-size: 16px;
+}
+
+.game-over__caption {
+    color: rgb(170, 170, 180);
+    font-size: 12px;
+    -unity-font-style: bold;
+}
+
+.game-over__time {
+    margin-bottom: 22px;
+    color: rgb(240, 240, 240);
+    font-size: 34px;
+    -unity-font-style: bold;
+}
+
+.game-over__button {
+    padding: 10px 26px;
+    border-width: 2px;
+    border-radius: 6px;
+    border-color: rgb(255, 196, 64);
+    background-color: rgb(90, 74, 40);
+    color: rgb(240, 240, 240);
+    font-size: 18px;
+}
+
+.game-over__button:hover {
+    background-color: rgb(120, 98, 50);
+}

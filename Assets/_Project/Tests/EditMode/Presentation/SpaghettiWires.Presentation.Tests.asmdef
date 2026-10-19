@@ -4,6 +4,7 @@
     "references": [
         "SpaghettiWires.Map",
         "SpaghettiWires.Views",
+        "SpaghettiWires.UI",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
