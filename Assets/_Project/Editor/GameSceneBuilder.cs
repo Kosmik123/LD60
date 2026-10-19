@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using SpaghettiWires.CameraControl;
+using SpaghettiWires.Game;
 using SpaghettiWires.Map;
 using SpaghettiWires.Sandbox;
 using SpaghettiWires.Tools;
@@ -119,6 +120,10 @@ namespace SpaghettiWires.EditorTools
             var gameOver = CreateDocument<GameOverView>("GameOver", panelSettings, sortingOrder: 10f);
             SetField(gameOver, "styleSheet", LoadStyleSheet("GameOver"));
             SetList(pointer, "blockingDocuments", ui, gameOver.GetComponent<UIDocument>());
+
+            var session = new GameObject("GameSession").AddComponent<GameSession>();
+            SetField(session, "hud", hud);
+            SetField(session, "gameOver", gameOver);
 
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();

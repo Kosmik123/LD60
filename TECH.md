@@ -25,6 +25,7 @@ Każdy folder w `Assets/_Project/Scripts/` to osobne assembly `SpaghettiWires.<N
 | `Input` | Narzędzia gracza, wybieranie obiektów myszą | Tak |
 | `UI` | HUD, menu, ekrany | Tak |
 | `CameraControl` | Kamera izometryczna | Tak |
+| `Game` | Składanie systemów na scenie, np. `GameSession` (ekonomia + zegar + UI) | Tak |
 
 Testy: `Assets/_Project/Tests/EditMode/<Nazwa>/`, jedno assembly `SpaghettiWires.Tests.EditMode`.
 
@@ -253,4 +254,5 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `Charge` dla wydatków przymusowych (utrzymanie, kary). Może zejść poniżej zera, co jest przegraną.
   - `ChangeReputation(delta)` w granicach 0–1. Reputacja 0 to przegrana.
   - Zdarzenia `MoneyChanged`, `ReputationChanged` i `Lost(LossReason)`, to ostatnie tylko raz.
+- **`GameSession`** (`Scripts/Game/`): tworzy `Economy` z wartościami startowymi z Inspectora, liczy czas gry (stoi po przegranej), podpina pieniądze, reputację i czas do `HudView`, a przegraną do `GameOverView`. W menu komponentu są akcje debugowe do sprawdzenia HUD i przegranej.
 - Do zrobienia: reguły, symulacja, widoki.

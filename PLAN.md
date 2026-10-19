@@ -95,10 +95,12 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
-- [ ] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
-  - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`). Brakuje wykrywania przegranej.
-- [ ] HUD: pieniądze, reputacja, czas.
-  - [x] Widok HUD: pieniądze i reputacja w lewym górnym rogu, czas w prawym (`HudView.SetMoney`, `SetReputation`, `SetTime`). Brakuje podpięcia ekonomii i zegara gry.
+- [x] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
+  - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`).
+  - [x] Wykrywanie przegranej w `Economy` i pokazanie ekranu przez `GameSession`.
+- [x] HUD: pieniądze, reputacja, czas.
+  - [x] Widok HUD: pieniądze i reputacja w lewym górnym rogu, czas w prawym (`HudView.SetMoney`, `SetReputation`, `SetTime`).
+  - [x] Podpięcie ekonomii i zegara gry (`GameSession`).
 
 > **Kamień milowy B:** grywalna pętla. Budujesz, ludzie dzwonią, zarabiasz albo przegrywasz. **Od tego momentu warto testować na innych osobach.**
 
