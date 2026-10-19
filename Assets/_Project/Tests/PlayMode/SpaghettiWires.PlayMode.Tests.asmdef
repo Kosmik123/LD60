@@ -1,0 +1,26 @@
+{
+    "name": "SpaghettiWires.PlayMode.Tests",
+    "rootNamespace": "SpaghettiWires.Tests",
+    "references": [
+        "SpaghettiWires.Map",
+        "SpaghettiWires.Views",
+        "SpaghettiWires.Tools",
+        "SpaghettiWires.Sandbox",
+        "Unity.InputSystem",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

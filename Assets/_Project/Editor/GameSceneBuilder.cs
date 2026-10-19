@@ -1,0 +1,431 @@
+using System;
+using System.IO;
+using SpaghettiWires.CameraControl;
+using SpaghettiWires.Map;
+using SpaghettiWires.Sandbox;
+using SpaghettiWires.Tools;
+using SpaghettiWires.UI;
+using SpaghettiWires.Views;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
+
+namespace SpaghettiWires.EditorTools
+{
+    /// <summary>
+    /// Buduje scenę gry z siatką, widokami, narzędziami i paskiem narzędzi oraz zastępcze modele
+    /// domu, słupa i centrali. Uruchamiane raz; dalej scenę można edytować ręcznie.
+    /// </summary>
+    public static class GameSceneBuilder
+    {
+        private const string ScenePath = "Assets/_Project/Scenes/Game.unity";
+        private const string PlaceholdersFolder = "Assets/_Project/Prefabs/Placeholders";
+        private const string MaterialsFolder = "Assets/_Project/Materials/Placeholders";
+        private const string UIFolder = "Assets/_Project/UI";
+        private const string VolumeProfilePath = "Assets/_Project/Settings/SampleSceneProfile.asset";
+
+        private const float CellSize = 4f;
+        private static readonly Vector2Int GridSize = new Vector2Int(25, 25);
+
+        [MenuItem("Tools/Spaghetti Wires/Zbuduj scenę gry")]
+        public static void Build()
+        {
+            var materials = new Materials();
+            BuildHousePrefab(materials);
+            BuildPolePrefab(materials);
+            BuildExchangePrefab(materials);
+            var panelSettings = BuildPanelSettings();
+            AssetDatabase.SaveAssets();
+
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // Nowa scena zwalnia nieużywane assety, więc prefaby wczytujemy dopiero teraz.
+            var house = LoadNodePrefab("House");
+            var pole = LoadNodePrefab("Pole");
+            var exchange = LoadNodePrefab("Exchange");
+
+            var camera = CreateCamera();
+            CreateLight();
+            CreateVolume();
+            CreateGround(materials);
+
+            var grid = new GameObject("Map").AddComponent<MapGridBehaviour>();
+            SetField(grid, "cellSize", CellSize);
+            SetField(grid, "size", GridSize);
+
+            var overlay = CreateChild<GridOverlay>(grid.transform, "GridOverlay");
+            overlay.GetComponent<MeshRenderer>().sharedMaterial = materials.Overlay;
+            overlay.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            SetField(overlay, "grid", grid);
+
+            var cellHighlight = CreateChild<CellHighlight>(grid.transform, "CellHighlight");
+            var marker = CreatePrimitive(PrimitiveType.Cube, "Marker", cellHighlight.transform, Vector3.zero, Vector3.one, materials.Overlay);
+            marker.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            SetField(cellHighlight, "grid", grid);
+            SetField(cellHighlight, "marker", marker.GetComponent<MeshRenderer>());
+
+            var views = new GameObject("Views").AddComponent<ViewRegistry>();
+            SetField(views, "grid", grid);
+            SetField(views, "housePrefab", house);
+            SetField(views, "polePrefab", pole);
+            SetField(views, "exchangePrefab", exchange);
+            SetField(views, "cableMaterial", materials.Cable);
+
+            var sandbox = new GameObject("Sandbox (tymczasowe)").AddComponent<SandboxBuildActions>();
+            SetField(sandbox, "grid", grid);
+            SetField(sandbox, "views", views);
+
+            var ui = new GameObject("UI").AddComponent<UIDocument>();
+            ui.panelSettings = panelSettings;
+
+            var toolsObject = new GameObject("Tools");
+            var pointer = toolsObject.AddComponent<ScenePointer>();
+            SetField(pointer, "sceneCamera", camera);
+            SetField(pointer, "grid", grid);
+            SetField(pointer, "views", views);
+            SetList(pointer, "blockingDocuments", ui);
+
+            var preview = CreateChild<CablePreview>(toolsObject.transform, "CablePreview");
+            var previewLine = preview.GetComponent<LineRenderer>();
+            previewLine.sharedMaterial = materials.Cable;
+            previewLine.enabled = false;
+
+            var tools = toolsObject.AddComponent<ToolController>();
+            SetField(tools, "pointer", pointer);
+            SetField(tools, "gridOverlay", overlay);
+            SetField(tools, "cellHighlight", cellHighlight);
+            SetField(tools, "cablePreview", preview);
+            tools.BuildActions = sandbox;
+            EditorUtility.SetDirty(tools);
+
+            var toolbar = ui.gameObject.AddComponent<ToolbarView>();
+            SetField(toolbar, "tools", tools);
+            SetField(toolbar, "styleSheet", AssetDatabase.LoadAssetAtPath<StyleSheet>($"{UIFolder}/Toolbar.uss"));
+
+            EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[GameSceneBuilder] Zapisano {ScenePath}");
+        }
+
+        /// <summary>
+        /// Do uruchamiania z wiersza poleceń: buduje scenę, układa przykładową sieć w trybie edycji
+        /// (bez zapisu) i renderuje podgląd z kamery do pliku podanego w „-previewPath”.
+        /// </summary>
+        public static void BuildAndRenderPreview()
+        {
+            Build();
+
+            var sandbox = Object.FindAnyObjectByType<SandboxBuildActions>();
+            var views = Object.FindAnyObjectByType<ViewRegistry>();
+            var grid = Object.FindAnyObjectByType<MapGridBehaviour>();
+            sandbox.SpawnStartHouses();
+
+            // Słup na środku i kable do wszystkich domów w zasięgu.
+            var center = grid.Grid.Size / 2;
+            sandbox.PlacePole(center);
+            int poleId = views.Nodes.Count;
+            foreach (var node in views.Nodes)
+            {
+                if (node.Id != poleId && sandbox.CheckCable(poleId, node.Id, 1).IsValid)
+                    sandbox.LayCable(poleId, node.Id, 1);
+            }
+
+            var overlay = Object.FindAnyObjectByType<GridOverlay>();
+            overlay.Rebuild();
+            overlay.Visible = true;
+            Object.FindAnyObjectByType<CellHighlight>().Show(center + new Vector2Int(2, -2), ToolContext.ValidColor);
+
+            string path = GetCommandLineArg("-previewPath") ?? "Temp/GamePreview.png";
+            Render(Camera.main, path);
+        }
+
+        #region Scene objects
+
+        private static Camera CreateCamera()
+        {
+            var cameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
+            var camera = cameraObject.AddComponent<Camera>();
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = new Color(0.55f, 0.68f, 0.8f);
+            camera.fieldOfView = 30f;
+            camera.farClipPlane = 500f;
+            cameraObject.AddComponent<AudioListener>();
+            cameraObject.AddComponent<IsometricCameraController>();
+
+            // To samo ustawienie, które kontroler kamery przyjmie na starcie (pitch 35°, yaw 45°, 35 m).
+            var rotation = Quaternion.Euler(35f, 45f, 0f);
+            cameraObject.transform.SetPositionAndRotation(-(rotation * Vector3.forward) * 35f, rotation);
+            return camera;
+        }
+
+        private static void CreateLight()
+        {
+            var light = new GameObject("Sun").AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.2f;
+            light.shadows = LightShadows.Soft;
+            light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+        }
+
+        private static void CreateVolume()
+        {
+            var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(VolumeProfilePath);
+            if (profile == null)
+                return;
+
+            var volume = new GameObject("Global Volume").AddComponent<Volume>();
+            volume.isGlobal = true;
+            volume.sharedProfile = profile;
+        }
+
+        private static void CreateGround(Materials materials)
+        {
+            var size = new Vector3(GridSize.x * CellSize + 20f, 0.2f, GridSize.y * CellSize + 20f);
+            CreatePrimitive(PrimitiveType.Cube, "Ground", null, new Vector3(0f, -0.1f, 0f), size, materials.Ground);
+        }
+
+        #endregion
+
+        #region Placeholder prefabs
+
+        private static void BuildHousePrefab(Materials materials)
+        {
+            const float width = 3.2f, height = 4f, roof = 0.2f;
+            var root = new GameObject("House");
+            CreatePrimitive(PrimitiveType.Cube, "Body", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(width, height, width), materials.Wall);
+            CreatePrimitive(PrimitiveType.Cube, "Roof", root.transform, new Vector3(0f, height + roof / 2f, 0f), new Vector3(width + 0.2f, roof, width + 0.2f), materials.Roof);
+
+            // Kable przyczepione na środku każdej krawędzi dachu.
+            float edge = width / 2f, anchorHeight = height + roof;
+            AddAnchors(root, new Vector3(edge, anchorHeight, 0f), new Vector3(-edge, anchorHeight, 0f),
+                new Vector3(0f, anchorHeight, edge), new Vector3(0f, anchorHeight, -edge));
+
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, (height + roof) / 2f, 0f);
+            collider.size = new Vector3(width, height + roof, width);
+            SaveNodePrefab(root, "House");
+        }
+
+        private static void BuildPolePrefab(Materials materials)
+        {
+            const float height = 7f, diameter = 0.24f, armHeight = 6.6f, armLength = 1.4f, arm = 0.1f;
+            var root = new GameObject("Pole");
+            CreatePrimitive(PrimitiveType.Cylinder, "Pole", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(diameter, height / 2f, diameter), materials.Wood);
+            CreatePrimitive(PrimitiveType.Cube, "Crossarm", root.transform, new Vector3(0f, armHeight, 0f), new Vector3(armLength, arm, arm), materials.Wood);
+
+            float top = armHeight + arm / 2f + 0.1f;
+            AddAnchors(root, new Vector3(-0.55f, top, 0f), new Vector3(-0.2f, top, 0f), new Vector3(0.2f, top, 0f), new Vector3(0.55f, top, 0f));
+
+            var collider = root.AddComponent<CapsuleCollider>();
+            collider.center = new Vector3(0f, height / 2f, 0f);
+            collider.height = height;
+            collider.radius = 0.5f;
+            SaveNodePrefab(root, "Pole");
+        }
+
+        private static void BuildExchangePrefab(Materials materials)
+        {
+            const float width = 3.6f, height = 6f;
+            var root = new GameObject("Exchange");
+            CreatePrimitive(PrimitiveType.Cube, "Body", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(width, height, width), materials.Exchange);
+            CreatePrimitive(PrimitiveType.Cylinder, "Mast", root.transform, new Vector3(0f, height + 1.5f, 0f), new Vector3(0.15f, 1.5f, 0.15f), materials.Roof);
+
+            float edge = width / 2f;
+            AddAnchors(root, new Vector3(edge, height, 0f), new Vector3(-edge, height, 0f),
+                new Vector3(0f, height, edge), new Vector3(0f, height, -edge));
+
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, height / 2f, 0f);
+            collider.size = new Vector3(width, height, width);
+            SaveNodePrefab(root, "Exchange");
+        }
+
+        private static void AddAnchors(GameObject root, params Vector3[] positions)
+        {
+            for (int i = 0; i < positions.Length; i++)
+            {
+                var anchor = new GameObject($"CableAnchor_{i}");
+                anchor.transform.SetParent(root.transform, false);
+                anchor.transform.localPosition = positions[i];
+            }
+        }
+
+        private static void SaveNodePrefab(GameObject root, string name)
+        {
+            root.AddComponent<NodeView>();
+            EnsureFolder(PlaceholdersFolder);
+            PrefabUtility.SaveAsPrefabAsset(root, $"{PlaceholdersFolder}/{name}.prefab");
+            Object.DestroyImmediate(root);
+        }
+
+        private static NodeView LoadNodePrefab(string name) =>
+            AssetDatabase.LoadAssetAtPath<NodeView>($"{PlaceholdersFolder}/{name}.prefab")
+            ?? throw new InvalidOperationException($"Placeholder prefab '{name}' was not saved.");
+
+        #endregion
+
+        #region Assets
+
+        private sealed class Materials
+        {
+            public readonly Material Ground = Lit("Ground", new Color(0.36f, 0.4f, 0.33f));
+            public readonly Material Wall = Lit("HouseWall", new Color(0.82f, 0.74f, 0.6f));
+            public readonly Material Roof = Lit("HouseRoof", new Color(0.42f, 0.3f, 0.26f));
+            public readonly Material Wood = Lit("PoleWood", new Color(0.4f, 0.27f, 0.16f));
+            public readonly Material Exchange = Lit("Exchange", new Color(0.55f, 0.6f, 0.68f));
+
+            // Kable i podglądy biorą kolor z wierzchołków (LineRenderer, linie siatki), więc shader cząsteczek.
+            public readonly Material Cable = Unlit("Cable", transparent: false);
+            public readonly Material Overlay = Unlit("Overlay", transparent: true);
+
+            private static Material Lit(string name, Color color)
+            {
+                var material = GetOrCreate(name, "Universal Render Pipeline/Lit");
+                material.SetColor("_BaseColor", color);
+                material.SetFloat("_Smoothness", 0.15f);
+                return material;
+            }
+
+            private static Material Unlit(string name, bool transparent)
+            {
+                var material = GetOrCreate(name, "Universal Render Pipeline/Particles/Unlit");
+                material.SetColor("_BaseColor", Color.white);
+                if (transparent)
+                {
+                    material.SetFloat("_Surface", 1f);
+                    material.SetFloat("_Blend", 0f);
+                    material.SetOverrideTag("RenderType", "Transparent");
+                    material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
+                    material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+                    material.SetInt("_ZWrite", 0);
+                    material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                    material.renderQueue = (int)RenderQueue.Transparent;
+                }
+                return material;
+            }
+
+            private static Material GetOrCreate(string name, string shader)
+            {
+                EnsureFolder(MaterialsFolder);
+                string path = $"{MaterialsFolder}/{name}.mat";
+                var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (material == null)
+                {
+                    material = new Material(Shader.Find(shader));
+                    AssetDatabase.CreateAsset(material, path);
+                }
+                EditorUtility.SetDirty(material);
+                return material;
+            }
+        }
+
+        private static PanelSettings BuildPanelSettings()
+        {
+            string path = $"{UIFolder}/PanelSettings.asset";
+            var settings = AssetDatabase.LoadAssetAtPath<PanelSettings>(path);
+            if (settings == null)
+            {
+                settings = ScriptableObject.CreateInstance<PanelSettings>();
+                AssetDatabase.CreateAsset(settings, path);
+            }
+
+            settings.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>($"{UIFolder}/RuntimeTheme.tss");
+            settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
+            settings.referenceResolution = new Vector2Int(1920, 1080);
+            settings.match = 0.5f;
+            EditorUtility.SetDirty(settings);
+            return settings;
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private static T CreateChild<T>(Transform parent, string name) where T : Component
+        {
+            var child = new GameObject(name);
+            child.transform.SetParent(parent, false);
+            return child.AddComponent<T>();
+        }
+
+        private static GameObject CreatePrimitive(PrimitiveType type, string name, Transform parent,
+            Vector3 position, Vector3 scale, Material material)
+        {
+            var part = GameObject.CreatePrimitive(type);
+            part.name = name;
+            Object.DestroyImmediate(part.GetComponent<Collider>());
+            part.transform.SetParent(parent, false);
+            part.transform.localPosition = position;
+            part.transform.localScale = scale;
+            part.GetComponent<MeshRenderer>().sharedMaterial = material;
+            return part;
+        }
+
+        // Pola komponentów są prywatne ([SerializeField]), więc ustawiamy je jak Inspector.
+        private static void SetField(Object target, string field, object value)
+        {
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(field)
+                ?? throw new ArgumentException($"{target.GetType().Name} has no serialized field '{field}'.");
+
+            switch (value)
+            {
+                case Object reference: property.objectReferenceValue = reference; break;
+                case float number: property.floatValue = number; break;
+                case Vector2Int vector: property.vector2IntValue = vector; break;
+                default: throw new ArgumentException($"Unsupported value type {value?.GetType().Name}.");
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetList(Object target, string field, params Object[] values)
+        {
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(field);
+            property.arraySize = values.Length;
+            for (int i = 0; i < values.Length; i++)
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void EnsureFolder(string folder)
+        {
+            if (AssetDatabase.IsValidFolder(folder))
+                return;
+
+            string parent = Path.GetDirectoryName(folder).Replace('\\', '/');
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, Path.GetFileName(folder));
+        }
+
+        private static void Render(Camera camera, string path)
+        {
+            var target = new RenderTexture(1280, 720, 24);
+            camera.targetTexture = target;
+            camera.Render();
+
+            RenderTexture.active = target;
+            var image = new Texture2D(target.width, target.height, TextureFormat.RGB24, false);
+            image.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+            image.Apply();
+            RenderTexture.active = null;
+            camera.targetTexture = null;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path)));
+            File.WriteAllBytes(path, image.EncodeToPNG());
+            Debug.Log($"[GameSceneBuilder] Podgląd: {path}");
+        }
+
+        private static string GetCommandLineArg(string name)
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            int index = Array.IndexOf(args, name);
+            return index >= 0 && index + 1 < args.Length ? args[index + 1] : null;
+        }
+
+        #endregion
+    }
+}

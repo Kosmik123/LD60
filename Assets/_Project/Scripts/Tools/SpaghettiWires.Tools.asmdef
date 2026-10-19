@@ -1,0 +1,19 @@
+{
+    "name": "SpaghettiWires.Tools",
+    "rootNamespace": "SpaghettiWires.Tools",
+    "references": [
+        "SpaghettiWires.Map",
+        "SpaghettiWires.Views",
+        "Unity.InputSystem",
+        "Bipolar.InterfaceSerialization"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

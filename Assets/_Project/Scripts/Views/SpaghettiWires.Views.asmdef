@@ -1,0 +1,16 @@
+{
+    "name": "SpaghettiWires.Views",
+    "rootNamespace": "SpaghettiWires.Views",
+    "references": [
+        "SpaghettiWires.Map"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
