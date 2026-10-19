@@ -16,11 +16,11 @@ namespace SpaghettiWires.UI
 
         private static readonly (ToolType type, string key, string label)[] Buttons =
         {
-            (ToolType.Cable, "1", "Kabel"),
-            (ToolType.Trunk, "2", "Magistrala"),
-            (ToolType.Pole, "3", "Słup"),
-            (ToolType.Meter, "4", "Miernik"),
-            (ToolType.Scissors, "5", "Nożyce"),
+            (ToolType.Cable, "1", "Cable"),
+            (ToolType.Trunk, "2", "Trunk"),
+            (ToolType.Pole, "3", "Pole"),
+            (ToolType.Meter, "4", "Meter"),
+            (ToolType.Scissors, "5", "Cutters"),
         };
 
         [SerializeField] private ToolController tools;
@@ -114,7 +114,7 @@ namespace SpaghettiWires.UI
             _hint.style.display = hint != null ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        /// <summary>Cennik narzędzia, np. „Kabel (1 żyła): 5 $/m”. Null, gdy budowa nie jest płatna.</summary>
+        /// <summary>Cennik narzędzia, np. „Cable (1 pair): $5/m”. Null, gdy budowa nie jest płatna.</summary>
         private string GetPriceHint(ToolType type)
         {
             var pricing = tools.Pricing;
@@ -123,11 +123,11 @@ namespace SpaghettiWires.UI
 
             return type switch
             {
-                ToolType.Cable => $"Kabel ({HudFormat.Pairs(1)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(1))}",
-                ToolType.Trunk => $"Magistrala ({HudFormat.Pairs(tools.TrunkPairs)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(tools.TrunkPairs))}",
-                ToolType.Pole => $"Słup: {HudFormat.Money(pricing.PolePrice)}",
-                ToolType.Meter => "Miernik: bez opłat",
-                ToolType.Scissors => "Nożyce: bez opłat",
+                ToolType.Cable => $"Cable ({HudFormat.Pairs(1)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(1))}",
+                ToolType.Trunk => $"Trunk ({HudFormat.Pairs(tools.TrunkPairs)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(tools.TrunkPairs))}",
+                ToolType.Pole => $"Pole: {HudFormat.Money(pricing.PolePrice)}",
+                ToolType.Meter => "Meter: free",
+                ToolType.Scissors => "Cutters: free",
                 _ => null,
             };
         }

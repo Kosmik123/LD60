@@ -25,8 +25,8 @@ namespace SpaghettiWires.Tools
             {
                 int working = context.Actions.MeasureWorkingPairs(cable.Id);
                 context.PostMessage(cable.Pairs == 1
-                    ? (working > 0 ? "Kabel działa." : "Kabel nie działa.")
-                    : $"Sprawne żyły: {working}/{cable.Pairs}");
+                    ? (working > 0 ? "The cable works." : "The cable is broken.")
+                    : $"Working pairs: {working}/{cable.Pairs}");
             });
 
         public static CableActionTool Scissors(ToolContext context) =>

@@ -68,27 +68,27 @@ namespace SpaghettiWires.Game
 
         private static string Describe(LossReason reason) => reason switch
         {
-            LossReason.Reputation => "Reputacja spadła do zera.",
-            LossReason.Money => "Skończyły się pieniądze.",
+            LossReason.Reputation => "Your reputation dropped to zero.",
+            LossReason.Money => "You ran out of money.",
             _ => null,
         };
 
         #region Debug
 
         // Do sprawdzania HUD i ekranu przegranej z menu komponentu, zanim podłączymy koszty i rozmowy.
-        [ContextMenu("Debug/+100 $")]
+        [ContextMenu("Debug/+$100")]
         private void DebugEarn() => Economy?.Earn(100);
 
-        [ContextMenu("Debug/Kup za 250 $")]
+        [ContextMenu("Debug/Buy for $250")]
         private void DebugSpend() => Economy?.TrySpend(250);
 
-        [ContextMenu("Debug/Kara 500 $")]
+        [ContextMenu("Debug/Charge $500")]
         private void DebugCharge() => Economy?.Charge(500);
 
-        [ContextMenu("Debug/-10% reputacji")]
+        [ContextMenu("Debug/-10% reputation")]
         private void DebugLoseReputation() => Economy?.ChangeReputation(-0.1f);
 
-        [ContextMenu("Debug/+10% reputacji")]
+        [ContextMenu("Debug/+10% reputation")]
         private void DebugGainReputation() => Economy?.ChangeReputation(0.1f);
 
         #endregion

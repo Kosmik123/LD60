@@ -42,7 +42,7 @@ namespace SpaghettiWires.DebugTools
             var house = pointer.HoveredNode;
             if (house == null || house.Kind != NodeVisualKind.House)
             {
-                tools.PostMessage("[test] Wskaż dom kursorem.");
+                tools.PostMessage("[test] Point at a house.");
                 return;
             }
 
@@ -61,14 +61,14 @@ namespace SpaghettiWires.DebugTools
         {
             var sim = simulation.Simulation;
             sim.GeneratorEnabled = !sim.GeneratorEnabled;
-            tools.PostMessage(sim.GeneratorEnabled ? "[test] Generator rozmów włączony." : "[test] Generator rozmów wyłączony.");
+            tools.PostMessage(sim.GeneratorEnabled ? "[test] Call generator on." : "[test] Call generator off.");
         }
 
         private void SelectCaller(NodeView house)
         {
             _caller = house;
             _caller.SetHighlight(CallerHighlight, 0.6f);
-            tools.PostMessage($"[test] Dzwoni dom #{house.Id}. Wskaż odbiorcę i naciśnij C.");
+            tools.PostMessage($"[test] House #{house.Id} is calling. Point at the callee and press C.");
         }
 
         private void CallSelected(NodeView callee)
@@ -87,13 +87,13 @@ namespace SpaghettiWires.DebugTools
 
         private void Report(CallOutcome outcome, NodeView caller, NodeView callee)
         {
-            string target = callee != null ? $"#{callee.Id}" : "losowy dom";
+            string target = callee != null ? $"#{callee.Id}" : "random house";
             string result = outcome switch
             {
-                CallOutcome.Connected => "połączono",
-                CallOutcome.CallerBusy => "linia dzwoniącego zajęta",
-                CallOutcome.CalleeBusy => "zajęte",
-                _ => "brak połączenia",
+                CallOutcome.Connected => "connected",
+                CallOutcome.CallerBusy => "caller line busy",
+                CallOutcome.CalleeBusy => "busy",
+                _ => "no connection",
             };
             tools.PostMessage($"[test] #{caller.Id} → {target}: {result}.");
         }

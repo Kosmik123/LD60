@@ -82,17 +82,17 @@ namespace SpaghettiWires.UI
         private void OnCallDropped(Call call)
         {
             OnCallCompleted(call);
-            ShowMessage(call.From, "ZERWANA");
-            ShowMessage(call.To, "ZERWANA");
+            ShowMessage(call.From, "DROPPED");
+            ShowMessage(call.To, "DROPPED");
         }
 
         private void OnCallFailed(NodeId from, NodeId to, CallOutcome outcome)
         {
             string message = outcome switch
             {
-                CallOutcome.CalleeBusy => "ZAJĘTE",
-                CallOutcome.NoRoute => "BRAK POŁĄCZENIA",
-                _ => "LINIA ZAJĘTA",
+                CallOutcome.CalleeBusy => "BUSY",
+                CallOutcome.NoRoute => "NO CONNECTION",
+                _ => "LINE BUSY",
             };
             ShowMessage(from, message);
         }

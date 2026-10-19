@@ -39,8 +39,8 @@ namespace SpaghettiWires.UI
             root.Add(top);
 
             var left = AddPanel(top);
-            _money = AddRow(left, "PIENIĄDZE");
-            _reputation = AddRow(left, "REPUTACJA");
+            _money = AddRow(left, "MONEY");
+            _reputation = AddRow(left, "REPUTATION");
             _reputationMeter = new VisualElement();
             _reputationMeter.AddToClassList("hud-meter");
             _reputationFill = new VisualElement();
@@ -49,7 +49,7 @@ namespace SpaghettiWires.UI
             left.Add(_reputationMeter);
 
             var right = AddPanel(top);
-            _time = AddRow(right, "CZAS");
+            _time = AddRow(right, "TIME");
 
             SetMoney(_moneyValue);
             SetReputation(_reputationValue);

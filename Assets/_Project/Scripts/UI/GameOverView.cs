@@ -35,14 +35,14 @@ namespace SpaghettiWires.UI
             panel.AddToClassList("game-over__panel");
             _overlay.Add(panel);
 
-            panel.Add(CreateLabel("Koniec gry", "game-over__title"));
+            panel.Add(CreateLabel("Game Over", "game-over__title"));
             _reason = CreateLabel(string.Empty, "game-over__reason");
             panel.Add(_reason);
-            panel.Add(CreateLabel("CZAS PRZETRWANIA", "game-over__caption"));
+            panel.Add(CreateLabel("TIME SURVIVED", "game-over__caption"));
             _time = CreateLabel(string.Empty, "game-over__time");
             panel.Add(_time);
 
-            var restart = new Button(Restart) { text = "Zagraj ponownie" };
+            var restart = new Button(Restart) { text = "Play Again" };
             restart.AddToClassList("game-over__button");
             panel.Add(restart);
 
@@ -50,7 +50,7 @@ namespace SpaghettiWires.UI
         }
 
         /// <param name="survivedSeconds">Czas od początku gry do przegranej.</param>
-        /// <param name="reason">Np. „Reputacja spadła do zera.”. Pusty = bez opisu.</param>
+        /// <param name="reason">Np. „Your reputation dropped to zero.”. Pusty = bez opisu.</param>
         public void Show(float survivedSeconds, string reason = null)
         {
             _time.text = HudFormat.Time(survivedSeconds);

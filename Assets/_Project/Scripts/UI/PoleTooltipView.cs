@@ -34,7 +34,7 @@ namespace SpaghettiWires.UI
             _tooltip = new VisualElement { pickingMode = PickingMode.Ignore };
             _tooltip.AddToClassList("node-tooltip");
 
-            var caption = new Label("MIEJSCA") { pickingMode = PickingMode.Ignore };
+            var caption = new Label("SLOTS") { pickingMode = PickingMode.Ignore };
             caption.AddToClassList("node-tooltip__caption");
             _tooltip.Add(caption);
 

@@ -89,7 +89,7 @@ namespace SpaghettiWires.Game
         public bool TryGetSlotUsage(int nodeId, out int used, out int capacity) => Inner.TryGetSlotUsage(nodeId, out used, out capacity);
 
         private BuildCheck CheckMoney(int price) =>
-            Economy.CanAfford(price) ? BuildCheck.Ok : BuildCheck.Fail($"Za mało pieniędzy. Potrzeba {HudFormat.Money(price)}.");
+            Economy.CanAfford(price) ? BuildCheck.Ok : BuildCheck.Fail($"Not enough money. You need {HudFormat.Money(price)}.");
 
         private void OnValidate() => _prices = null;
     }

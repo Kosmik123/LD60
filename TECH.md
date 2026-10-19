@@ -243,8 +243,8 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - `EndCall` zwalnia żyły i linie. Uszkodzenie żył lub usunięcie kabla zrywa najnowsze rozmowy (`CallDropped`).
   - Zajętość: `GetBusyPairs`, `GetFreePairs`, `GetNodeLoad` oraz zdarzenia `CableLoadChanged`, `NodeLoadChanged`.
 - **Fasada** `PhoneNetwork`: tworzy trzy warstwy we właściwej kolejności i udostępnia je jako `Structure`, `Condition`, `Traffic`. Nie powiela ich operacji.
-- **UI** (`Assets/_Project/Scripts/UI/`, UI Toolkit, elementy tworzone w kodzie, wygląd w `Assets/_Project/UI/*.uss`). Każdy widok ma własny `UIDocument` na wspólnym `PanelSettings`.
-  - `ToolbarView`: pasek narzędzi na dole, linia komunikatów i cennik narzędzia pod kursorem albo wybranego (np. „Kabel (1 żyła): 5 $/m”).
+- **UI** (`Assets/_Project/Scripts/UI/`, teksty dla gracza po angielsku, UI Toolkit, elementy tworzone w kodzie, wygląd w `Assets/_Project/UI/*.uss`). Każdy widok ma własny `UIDocument` na wspólnym `PanelSettings`.
+  - `ToolbarView`: pasek narzędzi na dole, linia komunikatów i cennik narzędzia pod kursorem albo wybranego (np. „Cable (1 pair): $5/m”).
   - `HudView`: pieniądze i reputacja (lewy górny róg), czas (prawy górny). Tylko wyświetla, wartości ustawia się metodami `Set*`.
   - `PoleTooltipView`: okienko z zajętością miejsc nad słupem pod kursorem, dane z `IBuildActions.TryGetSlotUsage`.
   - `CablePriceView`: cena nad środkiem podglądu przeciąganego kabla, zmienia się z długością, czerwona, gdy gracza nie stać. Dane z `ToolController.PricePreview`.
@@ -257,6 +257,6 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
   - Zdarzenia `MoneyChanged`, `ReputationChanged` i `Lost(LossReason)`, to ostatnie tylko raz.
 - **`GameSession`** (`Scripts/Game/`): tworzy `Economy` z wartościami startowymi z Inspectora, liczy czas gry (stoi po przegranej), podpina pieniądze, reputację i czas do `HudView`, a przegraną do `GameOverView`. W menu komponentu są akcje debugowe do sprawdzenia HUD i przegranej.
 - **Ceny budowy:** `BuildPrices` (`Scripts/Simulation/`, czysty C#): słup za stałą cenę, kabel za metr, magistrala za metr i żyłę. Długość to odległość między polami węzłów (pole 4 m), bez zwisu. Cena zaokrąglana w górę.
-- **`PaidBuildActions`** (`Scripts/Game/`): nakładka na `IBuildActions` i `IBuildPricing` (ceny dla UI, interfejs w `Tools`) (dziś sandbox, później reguły). `Check*` najpierw pyta warstwę pod spodem, potem sprawdza pieniądze („Za mało pieniędzy…”). `PlacePole` i `LayCable` pobierają pieniądze przez `Economy.TrySpend`, a HUD odświeża się przez `MoneyChanged`. Usuwanie kabla i pomiar są darmowe. Ceny ustawia się w Inspectorze.
+- **`PaidBuildActions`** (`Scripts/Game/`): nakładka na `IBuildActions` i `IBuildPricing` (ceny dla UI, interfejs w `Tools`) (dziś sandbox, później reguły). `Check*` najpierw pyta warstwę pod spodem, potem sprawdza pieniądze („Not enough money…”). `PlacePole` i `LayCable` pobierają pieniądze przez `Economy.TrySpend`, a HUD odświeża się przez `MoneyChanged`. Usuwanie kabla i pomiar są darmowe. Ceny ustawia się w Inspectorze.
 - **Ekonomia rozmów:** `CallPayouts` (`Scripts/Simulation/`, czysty C#) słucha `CallSimulation`: za `CallCompleted` daje pieniądze i trochę reputacji, za `CallFailed` (zależnie od `CallOutcome`) i `CallDropped` odbiera reputację. Liczby w `CallPayoutSettings`. Na scenie łączy ją `CallEconomyLink` (`Scripts/Game/`), który po przegranej wyłącza `CallSimulationRunner`.
 - Do zrobienia: reguły, symulacja, widoki.

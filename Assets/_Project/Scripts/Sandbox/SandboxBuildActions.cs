@@ -60,9 +60,9 @@ namespace SpaghettiWires.Sandbox
         public BuildCheck CheckPole(Vector2Int cell)
         {
             if (!grid.Grid.Contains(cell))
-                return BuildCheck.Fail("Poza mapą.");
+                return BuildCheck.Fail("Outside the map.");
             if (_nodeByCell.ContainsKey(cell))
-                return BuildCheck.Fail("To pole jest zajęte.");
+                return BuildCheck.Fail("This cell is already taken.");
             return BuildCheck.Ok;
         }
 
@@ -71,14 +71,14 @@ namespace SpaghettiWires.Sandbox
         public BuildCheck CheckCable(int fromNodeId, int toNodeId, int pairs)
         {
             if (fromNodeId == toNodeId)
-                return BuildCheck.Fail("Kabel musi łączyć dwa różne miejsca.");
+                return BuildCheck.Fail("A cable must connect two different places.");
 
             if (MapGrid.CellDistance(CellOf(fromNodeId), CellOf(toNodeId)) > GetSpan(pairs))
-                return BuildCheck.Fail("Za daleko. Postaw słup po drodze.");
+                return BuildCheck.Fail("Too far. Place a pole in between.");
             if (!CanAttach(fromNodeId, pairs) || !CanAttach(toNodeId, pairs))
-                return BuildCheck.Fail("Słup jest pełny. Postaw kolejny słup.");
+                return BuildCheck.Fail("The pole is full. Place another pole.");
             if (!views.IsCablePathClear(fromNodeId, toNodeId, NextCableId))
-                return BuildCheck.Fail("Kabel przecina budynek.");
+                return BuildCheck.Fail("The cable would go through a building.");
             return BuildCheck.Ok;
         }
 
