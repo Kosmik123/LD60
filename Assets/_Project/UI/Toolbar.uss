@@ -1,0 +1,55 @@
+.hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    padding-bottom: 16px;
+}
+
+.message {
+    margin-bottom: 8px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    background-color: rgba(20, 20, 24, 0.85);
+    color: rgb(240, 240, 240);
+    font-size: 16px;
+}
+
+.toolbar {
+    flex-direction: row;
+    padding: 6px;
+    border-radius: 10px;
+    background-color: rgba(20, 20, 24, 0.85);
+}
+
+.tool-button {
+    flex-direction: row;
+    align-items: center;
+    margin: 0 3px;
+    padding: 8px 14px;
+    border-width: 2px;
+    border-radius: 6px;
+    border-color: rgba(0, 0, 0, 0);
+    background-color: rgb(52, 52, 60);
+    color: rgb(225, 225, 225);
+    font-size: 16px;
+}
+
+.tool-button:hover {
+    background-color: rgb(72, 72, 82);
+}
+
+.tool-button--selected {
+    border-color: rgb(255, 196, 64);
+    background-color: rgb(90, 74, 40);
+}
+
+.tool-button__key {
+    margin-right: 8px;
+    padding: 0 5px;
+    border-radius: 3px;
+    background-color: rgba(255, 255, 255, 0.15);
+    font-size: 12px;
+    -unity-font-style: bold;
+}

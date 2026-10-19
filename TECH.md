@@ -13,12 +13,33 @@ Architektura i decyzje programistyczne. Design gry jest w [GDD.md](GDD.md).
 | **Testy** | `Assets/_Project/Tests/EditMode/` (Unity Test Framework, NUnit) |
 | **Assembly** | Każdy system logiki ma własny `.asmdef`. Testy mają osobne assembly tylko dla edytora. |
 
+### Foldery i assembly
+Każdy folder w `Assets/_Project/Scripts/` to osobne assembly `SpaghettiWires.<Nazwa>` i namespace o tej samej nazwie. Foldery tworzymy dopiero wtedy, gdy powstaje w nich pierwszy kod.
+
+| Folder | Zawartość | Zależy od Unity? |
+|---|---|---|
+| `Networking` | Sieć: struktura, stan techniczny, ruch, fasada (4) | Nie |
+| `Building` | Reguły budowy i mapa (5) | Minimalnie |
+| `Simulation` | Rozmowy w czasie, awarie, ekonomia, rozwój miasta (6) | Nie |
+| `Views` | `NodeView`, `CableView` i inne widoki (7) | Tak |
+| `Input` | Narzędzia gracza, wybieranie obiektów myszą | Tak |
+| `UI` | HUD, menu, ekrany | Tak |
+| `CameraControl` | Kamera izometryczna | Tak |
+
+Testy: `Assets/_Project/Tests/EditMode/<Nazwa>/`, jedno assembly `SpaghettiWires.Tests.EditMode`.
+
+### Skala
+- **1 jednostka Unity = 1 m.**
+- **Pole siatki: 4 × 4 m.** Siatka jest logiczna i niewidoczna dla gracza.
+- **Dom zajmuje 1 pole** (4 × 4 m, wysokość ok. 6–10 m). Słup stoi na 1 polu i ma ok. 8 m wysokości.
+- Odległości w regułach (np. zasięg kabla) podajemy w polach, a długość kabla (`Length`) w metrach.
+
 ---
 
 ## 2. Zasady ogólne
 
 1. **Model danych jest oddzielony od sceny.** Logika gry to czyste klasy C# (bez `MonoBehaviour`). Obiekty na scenie tylko ją **wyświetlają**.
-2. **Odwołania przez Id (int)**, a nie przez referencje do `GameObject` ani do innych obiektów modelu.
+2. **Odwołania przez Id**, a nie przez referencje do `GameObject` ani do innych obiektów modelu. Każdy rodzaj Id to osobna struktura (`NodeId`, `CableId`, `CallId`) z `int` w środku, więc nie da się ich pomylić ze sobą ani z liczbą.
 3. **Widok nigdy nie zmienia modelu bezpośrednio.** Input wysyła polecenie, model je waliduje i emituje zdarzenie, a widok się aktualizuje.
 4. **Bez obliczeń co klatkę, jeśli nie trzeba.** Trasa rozmowy liczona jest raz, przy jej rozpoczęciu.
 5. **Logikę testujemy testami EditMode**, bez uruchamiania sceny.
@@ -74,7 +95,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 |---|---|---|---|
 | **Struktura** | węzły; kabel: A, B, liczba żył, długość | Przy położeniu i usunięciu kabla. Poza tym nigdy. | Gracz (przez reguły) |
 | **Stan techniczny** | liczba uszkodzonych żył | Przy awariach (tylko rośnie) | Symulacja awarii |
-| **Ruch** | trwające rozmowy, zajęte żyły | Ciągle, kilka razy na sekundę | Symulacja rozmów |
+| **Ruch** | trwające rozmowy, zajęte żyły, zajęte domy | Ciągle, kilka razy na sekundę | Symulacja rozmów |
 
 ```
 ┌─ Struktura (CableNetwork) ─────────┐   kable niezmienne po położeniu
@@ -88,7 +109,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
         ▲ czyta
 ┌─ Ruch (Traffic) ───────────────────┐
 │  trwające rozmowy (Call + trasa)   │   źródło prawdy
-│  zajęte żyły na kablu              │   indeks wyliczany z rozmów
+│  zajęte żyły na kablu, zajęte domy │   indeksy wyliczane z rozmów
 │  wyszukiwanie trasy                │
 └────────────────────────────────────┘
 ```
@@ -109,10 +130,11 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 
 - Węzły są **równoważne**: płaski słownik, bez hierarchii i bez wewnętrznych złączy.
 - Każdy słup i centrala **przełącza rozmowy** między wszystkimi swoimi kablami. Nie modelujemy, co jest z czym połączone w środku.
+- Dom też przekazuje rozmowy, ale ma **jedną linię**: naraz uczestniczy w najwyżej jednej rozmowie, swojej albo cudzej (przechodzącej). Słup i centrala nie mają limitu rozmów, ogranicza je tylko liczba wolnych żył.
 - Węzły **nie znają** kabli. Struktura utrzymuje wewnętrzny indeks „węzeł → kable” wyłącznie do szybkiego przeszukiwania grafu.
 - Magistrala to po prostu kabel z `Pairs > 1`. Zwykły kabel ma `Pairs = 1`.
 - **Liczba uszkodzonych żył wystarczy.** Nie pamiętamy, które żyły padły, bo wszystkie są równoważne. Zwykły kabel jest albo sprawny (0), albo zerwany (1).
-- Sieć **nie zna** pozycji ani limitów słupów. `Length` to waga ustawiana przez warstwę reguł przy kładzeniu kabla, potrzebna do wyboru najkrótszej trasy i do jakości rozmowy.
+- Sieć **nie zna** pozycji ani limitów słupów. `Length` to waga ustawiana przez warstwę reguł przy kładzeniu kabla, na podstawie pozycji węzłów. Jest w strukturze, bo tak jak `Pairs` ustala się ją tylko przy położeniu kabla. Korzysta z niej wyszukiwanie trasy (w warstwie ruchu) i jakość rozmowy.
 
 ### 4.3 Wyszukiwanie trasy
 - Graf: węzły to wierzchołki, kable to krawędzie.
@@ -120,7 +142,9 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 - Rozmowa szuka **najkrótszej trasy** (suma `Length`, algorytm Dijkstry) po dostępnych kablach.
 - **Bez limitu długości trasy.** Długość zwracana jest razem z trasą, a symulacja przelicza ją na jakość rozmowy.
 - Trasa jest wybierana **raz**, przy rozpoczęciu rozmowy, i nie zmienia się w trakcie.
-- Wewnątrz trasy rozmowa może przechodzić tylko przez węzły, które **przełączają** rozmowy (słup, centrala). Czy dom też przełącza, jest otwartą decyzją designu, więc to będzie flaga zależna od typu węzła, łatwa do zmiany.
+- Rozmowa może przechodzić przez każdy typ węzła (dom, słup, centrala).
+- Dom jest **dostępny** tylko wtedy, gdy nie uczestniczy w żadnej trwającej rozmowie, ani jako koniec, ani jako węzeł pośredni. Zajęty dom jest pomijany przy wyszukiwaniu trasy. Jeśli zajęty jest dom początkowy lub docelowy, rozmowa od razu dostaje „zajęte”.
+- Limit rozmów na węźle (1 dla domu, brak dla słupa i centrali) to wartość zależna od typu węzła, łatwa do zmiany w balansie.
 
 ### 4.4 Operacje
 
@@ -130,13 +154,13 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 | Położenie kabla | Struktura | Między dwoma węzłami, z liczbą żył i długością. |
 | Usunięcie kabla (nożyce) | Struktura | Usuwa kabel. Stan techniczny usuwa jego wpis, ruch zrywa rozmowy, które nim szły. **To jedyna forma „naprawy”.** |
 | Uszkodzenie żył | Stan techniczny | Zwiększa liczbę uszkodzonych żył o `n` (najwyżej do `Pairs`). Całkowite zerwanie = uszkodzenie wszystkich żył. Jeśli trwających rozmów jest więcej niż sprawnych żył, ruch zrywa **najnowsze** rozmowy. |
-| Rozpoczęcie rozmowy | Ruch | Szuka trasy. Jeśli jest, zajmuje po jednej żyle w każdym kablu trasy i zwraca rozmowę. Jeśli nie, zwraca „zajęte”. |
-| Zakończenie rozmowy | Ruch | Zwalnia żyły. |
+| Rozpoczęcie rozmowy | Ruch | Szuka trasy. Jeśli jest, zajmuje po jednej żyle w każdym kablu trasy oraz linię każdego domu na trasie (także początkowego i docelowego) i zwraca rozmowę. Jeśli nie, zwraca „zajęte”. |
+| Zakończenie rozmowy | Ruch | Zwalnia żyły i linie domów. |
 | Pomiar (miernik) | Stan techniczny | Zwraca liczbę sprawnych żył kabla. |
 
 **Nie ma operacji naprawy.** Uszkodzenia tylko przybywają, aż do usunięcia kabla. Nie ma też automatycznej wymiany: nowy kabel to zawsze osobne położenie kabla.
 
-**Zrywanie rozmów:** gdy kabel traci żyły, a trwających na nim rozmów jest więcej niż sprawnych żył, zrywamy rozmowy od najnowszej. Jest to deterministyczne, więc łatwe do testowania. Zerwana rozmowa zwalnia żyły na wszystkich kablach swojej trasy.
+**Zrywanie rozmów:** gdy kabel traci żyły, a trwających na nim rozmów jest więcej niż sprawnych żył, zrywamy rozmowy od najnowszej. Jest to deterministyczne, więc łatwe do testowania. Zerwana rozmowa zwalnia żyły na wszystkich kablach swojej trasy i linie domów na niej.
 
 ### 4.5 Zdarzenia
 
@@ -144,7 +168,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 |---|---|
 | Struktura | dodano / usunięto węzeł, dodano / usunięto kabel |
 | Stan techniczny | żyły kabla uszkodzone |
-| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla |
+| Ruch | rozmowa rozpoczęta, zakończona, zerwana; zmieniła się zajętość kabla lub węzła |
 
 Widoki podpinają się wybiórczo: grafika kabla pod strukturę (i ewentualne efekty uszkodzeń, np. iskry), a świecenie rozmów pod ruch.
 
@@ -161,7 +185,7 @@ Jedyna droga, którą akcje gracza trafiają do sieci.
 - **Walidacja przed wywołaniem sieci:**
   - odległość między węzłami ≤ limit (zależny od typu kabla),
   - limit kabli na słupie wg klasy: mały 5, średni 12, duży 30, centrala bez limitu (wartości wstępne),
-  - liczą się wszystkie kable, także uszkodzone, a **magistrala liczy się jako jeden kabel**,
+  - liczą się wszystkie kable, także uszkodzone, a kabel zajmuje **√(liczba żył)** miejsc: zwykły 1, magistrala 4 → 2, 9 → 3, 16 → 4,
   - koszt.
 - **Długość kabla** liczona z pozycji i przekazywana do sieci jako `Length`.
 - **Podgląd:** ta sama walidacja bez zmiany stanu, żeby kabel mógł świecić na czerwono, zanim gracz puści przycisk.
@@ -197,7 +221,7 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 8. Wydajność
 
-- Model to słowniki i listy intów.
+- Model to słowniki i listy Id (struktury z jednym `int`, bez alokacji).
 - Dijkstra przy każdej nowej rozmowie: przy setkach węzłów i kilku rozmowach na sekundę to pomijalny koszt.
 - Gdyby było trzeba: ograniczyć liczbę nowych rozmów na klatkę albo cache'ować trasy do pierwszej zmiany topologii.
 
@@ -205,4 +229,17 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 9. Stan implementacji
 
-- Gałąź `Network` zawiera **pierwszy prototyp** sieci w starym modelu: kabel jako trasa przez wiele węzłów i zapisane na sztywno drzewo usług (`ServiceNode`). Do przepisania na model z sekcji 4.
+- **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Networking/` (assembly `SpaghettiWires.Networking`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Networking/`.
+  - Id węzłów i kabli (`NodeId`, `CableId`) nadaje sieć i nie używa ich ponownie. Domyślne Id (wartość 0) nie wskazuje żadnego obiektu.
+  - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
+- **Stan techniczny** (4.1, 4.4): `CableCondition` z referencją do struktury (tylko odczyt i zdarzenie usunięcia kabla).
+  - `Damage(cableId, n)` i `Break(cableId)` dodają uszkodzone żyły, najwyżej do `Pairs`. Zdarzenie `PairsDamaged` tylko przy zmianie.
+  - `GetWorkingPairs` to wynik pomiaru miernikiem. `DamagedCableIds` przyda się np. do wskaźnika chaosu.
+  - Po usunięciu kabla jego wpis znika.
+- **Ruch** (4.3, 4.4): `Traffic` i `Call`.
+  - `TryStartCall(from, to, out call)` szuka trasy algorytmem Dijkstry (suma `Length`) po kablach z wolną żyłą i przez węzły z wolną linią. Zwraca false, czyli „zajęte”.
+  - Pojemność węzła: `Traffic.GetCallCapacity(kind)`, dom 1, słup i centrala bez limitu.
+  - `EndCall` zwalnia żyły i linie. Uszkodzenie żył lub usunięcie kabla zrywa najnowsze rozmowy (`CallDropped`).
+  - Zajętość: `GetBusyPairs`, `GetFreePairs`, `GetNodeLoad` oraz zdarzenia `CableLoadChanged`, `NodeLoadChanged`.
+- **Fasada** `PhoneNetwork`: tworzy trzy warstwy we właściwej kolejności i udostępnia je jako `Structure`, `Condition`, `Traffic`. Nie powiela ich operacji.
+- Do zrobienia: reguły, symulacja, widoki.
