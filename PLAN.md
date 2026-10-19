@@ -89,6 +89,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] **Nożyce:** usuń kabel. **Miernik:** pokaż sprawne żyły (na razie z sandboxa, bez awarii).
 - [x] Wybieranie obiektów myszą (raycast → `Id`) i podświetlanie pod kursorem (`ScenePointer`).
 - [x] Okienko nad słupem z zajętością miejsc, np. `7/12` (`PoleTooltipView`). Dane na razie z sandboxa przez `IBuildActions.TryGetSlotUsage`.
+- [x] Blokady narzędzi: na starcie tylko Kabel, reszta przez `ToolController.Unlock`. Co i kiedy odblokowuje, jeszcze do ustalenia.
 
 > **Kamień milowy A:** można stawiać słupy i łączyć domy kablami. Nic jeszcze nie dzwoni.
 > Osiągnięty: budowa działa na prawdziwej sieci przez sandbox. Porządki techniczne (reguły zamiast sandboxa, widoki ze zdarzeń sieci) nie blokują kolejnych etapów.

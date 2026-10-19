@@ -93,9 +93,35 @@ namespace SpaghettiWires.Tests
         }
 
         [UnityTest]
+        public IEnumerator Scene_StartsWithOnlyCableUnlocked()
+        {
+            Assert.IsTrue(_tools.IsUnlocked(ToolType.Cable));
+            Assert.IsFalse(_tools.IsUnlocked(ToolType.Trunk));
+            Assert.IsFalse(_tools.IsUnlocked(ToolType.Pole));
+            Assert.IsFalse(_tools.IsUnlocked(ToolType.Meter));
+            Assert.IsFalse(_tools.IsUnlocked(ToolType.Scissors));
+            yield break;
+        }
+
+        [UnityTest]
+        public IEnumerator Keys_SelectOnlyUnlockedTools()
+        {
+            yield return PressKey(Key.Digit3);
+            Assert.AreEqual(ToolType.None, _tools.Current, "Locked Pole cannot be selected");
+
+            yield return PressKey(Key.Digit1);
+            Assert.AreEqual(ToolType.Cable, _tools.Current);
+
+            _tools.Unlock(ToolType.Pole);
+            yield return PressKey(Key.Digit3);
+            Assert.AreEqual(ToolType.Pole, _tools.Current, "Unlocked Pole can be selected");
+        }
+
+        [UnityTest]
         public IEnumerator PoleTool_ClickOnFreeCell_PlacesPoleOnThatCell()
         {
             var cell = FindFreeCellNearCenter();
+            _tools.Unlock(ToolType.Pole);
             _tools.Select(ToolType.Pole);
             Assert.IsTrue(Object.FindAnyObjectByType<GridOverlay>().Visible, "Grid is shown while placing poles");
 
@@ -111,6 +137,7 @@ namespace SpaghettiWires.Tests
         {
             var house = _views.Nodes.First();
             int nodeCount = _views.Nodes.Count;
+            _tools.Unlock(ToolType.Pole);
             _tools.Select(ToolType.Pole);
 
             yield return Click(_camera.WorldToScreenPoint(_grid.CellToWorld(house.Cell)));
@@ -141,6 +168,7 @@ namespace SpaghettiWires.Tests
             var (from, to) = FindPickableHousePair();
             _sandbox.LayCable(from.Id, to.Id, 1);
             var cable = _views.Cables.Single();
+            _tools.Unlock(ToolType.Scissors);
             _tools.Select(ToolType.Scissors);
 
             yield return Click(FindPickablePointOn(cable));

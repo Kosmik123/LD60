@@ -74,9 +74,11 @@ namespace SpaghettiWires.UI
 
                 bar.Add(button);
                 _buttons[type] = button;
+                button.SetEnabled(tools.IsUnlocked(type));
             }
 
             tools.ToolChanged += OnToolChanged;
+            tools.ToolUnlocked += OnToolUnlocked;
             tools.MessagePosted += OnMessagePosted;
             OnToolChanged(tools.Current);
             _message.visible = false;
@@ -85,6 +87,7 @@ namespace SpaghettiWires.UI
         private void OnDisable()
         {
             tools.ToolChanged -= OnToolChanged;
+            tools.ToolUnlocked -= OnToolUnlocked;
             tools.MessagePosted -= OnMessagePosted;
         }
 
@@ -99,6 +102,12 @@ namespace SpaghettiWires.UI
             foreach (var (type, button) in _buttons)
                 button.EnableInClassList(SelectedClass, type == current);
             UpdateHint();
+        }
+
+        private void OnToolUnlocked(ToolType type)
+        {
+            if (_buttons.TryGetValue(type, out var button))
+                button.SetEnabled(true);
         }
 
         private void SetHovered(ToolType type)

@@ -62,3 +62,8 @@
     color: rgb(255, 220, 120);
     font-size: 14px;
 }
+
+/* Zablokowane narzędzie: przycisk nie reaguje na kliknięcia. */
+.tool-button:disabled {
+    opacity: 0.4;
+}

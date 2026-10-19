@@ -25,12 +25,23 @@ namespace SpaghettiWires.Tools
         [Tooltip("Liczba żył magistrali (GDD 3.3: 4, 9 albo 16).")]
         [SerializeField] private int trunkPairs = 4;
 
+        [Header("Postęp")]
+        [Tooltip("Narzędzia dostępne od początku gry. Pozostałe trzeba odblokować.")]
+        [SerializeField] private List<ToolType> initiallyUnlocked = new List<ToolType> { ToolType.Cable };
+
         private readonly Dictionary<ToolType, ITool> _tools = new Dictionary<ToolType, ITool>();
         private ToolContext _context;
+        private HashSet<ToolType> _unlocked;
+
+        // Leniwie, bo pasek narzędzi może pytać o blokady w OnEnable, przed Awake tego komponentu.
+        private HashSet<ToolType> Unlocked => _unlocked ??= new HashSet<ToolType>(initiallyUnlocked);
 
         public ToolType Current { get; private set; } = ToolType.None;
 
         public event Action<ToolType> ToolChanged;
+
+        /// <summary>Narzędzie właśnie stało się dostępne.</summary>
+        public event Action<ToolType> ToolUnlocked;
 
         /// <summary>Komunikat dla gracza, np. powód, dla którego akcja się nie udała.</summary>
         public event Action<string> MessagePosted;
@@ -71,10 +82,28 @@ namespace SpaghettiWires.Tools
                 tool.Tick();
         }
 
+        /// <summary>Czy gracz może wybrać to narzędzie. Odłożenie narzędzia (None) jest zawsze dostępne.</summary>
+        public bool IsUnlocked(ToolType type) => type == ToolType.None || Unlocked.Contains(type);
+
+        /// <summary>Udostępnia narzędzie graczowi. Ponowne odblokowanie nic nie robi.</summary>
+        public void Unlock(ToolType type)
+        {
+            if (type == ToolType.None || !Unlocked.Add(type))
+                return;
+
+            ToolUnlocked?.Invoke(type);
+        }
+
         public void Select(ToolType type)
         {
             if (type == Current)
                 return;
+
+            if (!IsUnlocked(type))
+            {
+                PostMessage("This tool is locked.");
+                return;
+            }
 
             if (_tools.TryGetValue(Current, out var previous))
                 previous.Exit();
