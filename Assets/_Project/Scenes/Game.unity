@@ -1229,8 +1229,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SpaghettiWires.Sandbox::SpaghettiWires.Sandbox.SandboxBuildActions
   grid: {fileID: 59145765}
   views: {fileID: 351612543}
-  startHouses: 8
-  startRadius: 5
+  minHouseDistance: 2
   seed: 60
   cableSpan: 5
   trunkSpan: 7
@@ -1708,6 +1707,7 @@ GameObject:
   - component: {fileID: 1939745710}
   - component: {fileID: 1707793813}
   - component: {fileID: 1306316780}
+  - component: {fileID: 1584203317}
   m_Layer: 0
   m_Name: GameSession
   m_TagString: Untagged
@@ -1788,6 +1788,38 @@ MonoBehaviour:
     reputationPerCalleeBusy: -0.01
     reputationPerCallerBusy: -0.01
     reputationPerDroppedCall: -0.04
+--- !u!114 &1584203317
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 362824951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 472bf6dfb5c24f69ad9f0e454793b30f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SpaghettiWires.Game::SpaghettiWires.Game.GameProgression
+  session: {fileID: 1939745710}
+  tools: {fileID: 872057602}
+  houses:
+    serializedValue:
+      serializedObject: {fileID: 1296632933}
+  startHouseCells:
+  - {x: 11, y: 12}
+  - {x: 14, y: 12}
+  startTools:
+  - 1
+  firstHouseDelay: 30
+  houseIntervalFactor: 0.9
+  minHouseInterval: 8
+  toolUnlocks:
+  - tool: 3
+    time: 45
+  - tool: 5
+    time: 90
+  - tool: 2
+    time: 180
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

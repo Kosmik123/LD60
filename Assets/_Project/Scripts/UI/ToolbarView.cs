@@ -14,12 +14,12 @@ namespace SpaghettiWires.UI
     {
         private const string SelectedClass = "tool-button--selected";
 
-        private static readonly (ToolType type, string key, string label)[] Buttons =
+        private static readonly ToolType[] Buttons =
         {
-            (ToolType.Cable, "1", "Cable"),
-            (ToolType.Pole, "2", "Pole"),
-            (ToolType.Scissors, "3", "Cutters"),
-            (ToolType.Trunk, "4", "Trunk"),
+            ToolType.Cable,
+            ToolType.Pole,
+            ToolType.Scissors,
+            ToolType.Trunk,
         };
 
         [SerializeField] private ToolController tools;
@@ -58,24 +58,26 @@ namespace SpaghettiWires.UI
             bar.AddToClassList("toolbar");
             hud.Add(bar);
 
-            foreach (var (type, key, label) in Buttons)
+            foreach (var type in Buttons)
             {
                 var button = new Button(() => tools.Select(tools.Current == type ? ToolType.None : type));
                 button.AddToClassList("tool-button");
 
-                var keyLabel = new Label(key);
+                var keyLabel = new Label(type.Key());
                 keyLabel.AddToClassList("tool-button__key");
                 button.Add(keyLabel);
-                button.Add(new Label(label));
+                button.Add(new Label(type.Label()));
 
                 button.RegisterCallback<PointerEnterEvent>(_ => SetHovered(type));
                 button.RegisterCallback<PointerLeaveEvent>(_ => SetHovered(ToolType.None));
 
                 bar.Add(button);
                 _buttons[type] = button;
+                button.SetEnabled(tools.IsUnlocked(type));
             }
 
             tools.ToolChanged += OnToolChanged;
+            tools.ToolUnlocked += OnToolUnlocked;
             tools.MessagePosted += OnMessagePosted;
             OnToolChanged(tools.Current);
             _message.visible = false;
@@ -84,6 +86,7 @@ namespace SpaghettiWires.UI
         private void OnDisable()
         {
             tools.ToolChanged -= OnToolChanged;
+            tools.ToolUnlocked -= OnToolUnlocked;
             tools.MessagePosted -= OnMessagePosted;
         }
 
@@ -98,6 +101,12 @@ namespace SpaghettiWires.UI
             foreach (var (type, button) in _buttons)
                 button.EnableInClassList(SelectedClass, type == current);
             UpdateHint();
+        }
+
+        private void OnToolUnlocked(ToolType type)
+        {
+            if (_buttons.TryGetValue(type, out var button))
+                button.SetEnabled(true);
         }
 
         private void SetHovered(ToolType type)

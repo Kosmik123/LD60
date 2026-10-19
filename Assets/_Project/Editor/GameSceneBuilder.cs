@@ -157,6 +157,13 @@ namespace SpaghettiWires.EditorTools
             SetField(callEconomy, "session", session);
             SetField(callEconomy, "simulation", Object.FindAnyObjectByType<CallSimulationRunner>());
 
+            // Domy na start, nowe domy i odblokowywanie narzędzi.
+            var progression = session.gameObject.AddComponent<GameProgression>();
+            progression.Houses = sandbox;
+            SetField(progression, "session", session);
+            SetField(progression, "tools", tools);
+            EditorUtility.SetDirty(progression);
+
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[GameSceneBuilder] Zapisano {ScenePath}");
@@ -224,7 +231,8 @@ namespace SpaghettiWires.EditorTools
             var sandbox = Object.FindAnyObjectByType<SandboxBuildActions>();
             var views = Object.FindAnyObjectByType<ViewRegistry>();
             var grid = Object.FindAnyObjectByType<MapGridBehaviour>();
-            sandbox.SpawnStartHouses();
+            for (int i = 0; i < 8; i++)
+                sandbox.TrySpawnHouse();
 
             // Słup na środku, magistrala do drugiego słupa i kable do domów w zasięgu, aż słup się zapełni.
             var center = grid.Grid.Size / 2;

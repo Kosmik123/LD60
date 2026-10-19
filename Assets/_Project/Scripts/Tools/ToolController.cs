@@ -28,10 +28,15 @@ namespace SpaghettiWires.Tools
 
         private readonly Dictionary<ToolType, ITool> _tools = new Dictionary<ToolType, ITool>();
         private ToolContext _context;
+        // Na starcie wszystko zablokowane. Odblokowuje progresja gry.
+        private readonly HashSet<ToolType> _unlocked = new HashSet<ToolType>();
 
         public ToolType Current { get; private set; } = ToolType.None;
 
         public event Action<ToolType> ToolChanged;
+
+        /// <summary>Narzędzie właśnie stało się dostępne.</summary>
+        public event Action<ToolType> ToolUnlocked;
 
         /// <summary>Komunikat dla gracza, np. powód, dla którego akcja się nie udała.</summary>
         public event Action<string> MessagePosted;
@@ -72,10 +77,28 @@ namespace SpaghettiWires.Tools
                 tool.Tick();
         }
 
+        /// <summary>Czy gracz może wybrać to narzędzie. Odłożenie narzędzia (None) jest zawsze dostępne.</summary>
+        public bool IsUnlocked(ToolType type) => type == ToolType.None || _unlocked.Contains(type);
+
+        /// <summary>Udostępnia narzędzie graczowi. Ponowne odblokowanie nic nie robi.</summary>
+        public void Unlock(ToolType type)
+        {
+            if (type == ToolType.None || !_unlocked.Add(type))
+                return;
+
+            ToolUnlocked?.Invoke(type);
+        }
+
         public void Select(ToolType type)
         {
             if (type == Current)
                 return;
+
+            if (!IsUnlocked(type))
+            {
+                PostMessage("This tool is locked.");
+                return;
+            }
 
             if (_tools.TryGetValue(Current, out var previous))
                 previous.Exit();
