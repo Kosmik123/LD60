@@ -72,14 +72,14 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 
 | Warstwa | Dane | Kiedy się zmienia | Kto zmienia |
 |---|---|---|---|
-| **Struktura** | węzły; kabel: A, B, liczba żył, długość | Przy położeniu i usunięciu kabla. Poza tym nigdy. | Gracz (przez reguły) |
+| **Struktura** | węzły; kabel: A, B, liczba żył | Przy położeniu i usunięciu kabla. Poza tym nigdy. | Gracz (przez reguły) |
 | **Stan techniczny** | liczba uszkodzonych żył | Przy awariach (tylko rośnie) | Symulacja awarii |
 | **Ruch** | trwające rozmowy, zajęte żyły, zajęte domy | Ciągle, kilka razy na sekundę | Symulacja rozmów |
 
 ```
 ┌─ Struktura (CableNetwork) ─────────┐   kable niezmienne po położeniu
 │  Node:  Id, Kind                   │
-│  Cable: Id, A, B, Pairs, Length    │
+│  Cable: Id, A, B, Pairs            │
 └────────────────────────────────────┘
         ▲ czytają
 ┌─ Stan techniczny (CableCondition) ─┐   słownik cableId → liczba uszkodzonych żył
@@ -94,7 +94,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 ```
 
 - **Zajęte żyły to nie fakt o kablu**, tylko wynik tego, jakie rozmowy trwają. Źródłem prawdy są rozmowy, a liczba zajętych żył to indeks utrzymywany przez warstwę ruchu.
-- **Wyszukiwanie trasy wywołuje warstwa ruchu**, bo tylko ona zna wszystkie trzy informacje. Sam algorytm (`CablePathfinder`) działa na strukturze, a dostępność kabli i węzłów dostaje z zewnątrz jako funkcje. Struktura i stan techniczny nic nie wiedzą o rozmowach.
+- **Wyszukiwanie trasy jest w warstwie ruchu**, bo tylko ona potrzebuje wszystkich trzech informacji. Struktura i stan techniczny nic nie wiedzą o rozmowach.
 - **Synchronizacja cyklu życia przez zdarzenia:** struktura emituje „kabel usunięty”, a stan i ruch sprzątają po sobie (ruch zrywa rozmowy na tym kablu). Stan emituje „żyły uszkodzone”, a ruch zrywa nadmiarowe rozmowy.
 - Na jam wszystkie trzy warstwy trzyma jedna klasa-fasada (np. `PhoneNetwork`), która jest jedynym punktem wejścia dla reguł i symulacji.
 
@@ -103,7 +103,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 | Element | Warstwa | Dane |
 |---|---|---|
 | **Węzeł** (`Node`) | Struktura | `Id`, `Kind` (dom, słup, centrala). Jeden węzeł na obiekt na mapie. |
-| **Kabel** (`Cable`) | Struktura | `Id`, węzeł A, węzeł B, `Pairs` (liczba żył), `Length`. **Niezmienny.** |
+| **Kabel** (`Cable`) | Struktura | `Id`, węzeł A, węzeł B, `Pairs` (liczba żył). **Niezmienny.** |
 | **Uszkodzenia** | Stan techniczny | `cableId → liczba uszkodzonych żył` |
 | **Rozmowa** (`Call`) | Ruch | `Id`, węzeł początkowy, węzeł docelowy, trasa (lista kabli), kolejność rozpoczęcia |
 
@@ -113,12 +113,12 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 - Węzły **nie znają** kabli. Struktura utrzymuje wewnętrzny indeks „węzeł → kable” wyłącznie do szybkiego przeszukiwania grafu.
 - Magistrala to po prostu kabel z `Pairs > 1`. Zwykły kabel ma `Pairs = 1`.
 - **Liczba uszkodzonych żył wystarczy.** Nie pamiętamy, które żyły padły, bo wszystkie są równoważne. Zwykły kabel jest albo sprawny (0), albo zerwany (1).
-- Sieć **nie zna** pozycji ani limitów słupów. `Length` służy tylko do wyszukiwania trasy. Ustawiają ją reguły przy kładzeniu kabla, na podstawie pozycji węzłów na mapie. Węzły się nie przesuwają, więc długość się nie zmienia.
+- Sieć **nie zna** pozycji, długości kabli ani limitów słupów. Długość kabla wynika z pozycji węzłów, więc zna ją tylko mapa w warstwie reguł.
 
 ### 4.3 Wyszukiwanie trasy
 - Graf: węzły to wierzchołki, kable to krawędzie.
 - **Wolne żyły** = `Pairs − uszkodzone − zajęte`. Kabel jest **dostępny**, jeśli ma co najmniej jedną wolną żyłę.
-- Rozmowa szuka **najkrótszej trasy** (suma `Length`, algorytm Dijkstry) po dostępnych kablach. Liczy się suma długości, a nie liczba kabli.
+- Rozmowa szuka **najkrótszej trasy** (algorytm Dijkstry) po dostępnych kablach. Wagę kabla (długość) wyszukiwanie dostaje z zewnątrz jako funkcję `cableId → długość`, dostarczaną przez mapę.
 - **Bez limitu długości trasy.** Długość zwracana jest razem z trasą, a symulacja przelicza ją na jakość rozmowy.
 - Trasa jest wybierana **raz**, przy rozpoczęciu rozmowy, i nie zmienia się w trakcie.
 - Rozmowa może przechodzić przez każdy typ węzła (dom, słup, centrala).
@@ -130,7 +130,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 | Operacja | Warstwa | Opis |
 |---|---|---|
 | Dodanie / usunięcie węzła | Struktura | Słup, budynek, centrala. |
-| Położenie kabla | Struktura | Między dwoma węzłami, z liczbą żył i długością. |
+| Położenie kabla | Struktura | Między dwoma węzłami, z liczbą żył. |
 | Usunięcie kabla (nożyce) | Struktura | Usuwa kabel. Stan techniczny usuwa jego wpis, ruch zrywa rozmowy, które nim szły. **To jedyna forma „naprawy”.** |
 | Uszkodzenie żył | Stan techniczny | Zwiększa liczbę uszkodzonych żył o `n` (najwyżej do `Pairs`). Całkowite zerwanie = uszkodzenie wszystkich żył. Jeśli trwających rozmów jest więcej niż sprawnych żył, ruch zrywa **najnowsze** rozmowy. |
 | Rozpoczęcie rozmowy | Ruch | Szuka trasy. Jeśli jest, zajmuje po jednej żyle w każdym kablu trasy oraz linię każdego domu na trasie (także początkowego i docelowego) i zwraca rozmowę. Jeśli nie, zwraca „zajęte”. |
@@ -166,7 +166,7 @@ Jedyna droga, którą akcje gracza trafiają do sieci.
   - limit kabli na słupie wg klasy: mały 5, średni 12, duży 30, centrala bez limitu (wartości wstępne),
   - liczą się wszystkie kable, także uszkodzone, a kabel zajmuje **√(liczba żył)** miejsc: zwykły 1, magistrala 4 → 2, 9 → 3, 16 → 4,
   - koszt.
-- **Długość kabla** liczona z pozycji węzłów i przekazywana do sieci jako `Length`.
+- **Długość kabla** liczona z pozycji węzłów na mapie. Mapa udostępnia ją wyszukiwaniu trasy jako wagę kabla.
 - **Podgląd:** ta sama walidacja bez zmiany stanu, żeby kabel mógł świecić na czerwono, zanim gracz puści przycisk.
 - **Wszystkie liczby do balansu w jednym miejscu** (klasa z regułami lub `ScriptableObject`).
 - Ewentualne ograniczenia dla domów (np. brak magistral) też trafiają tutaj.
@@ -211,5 +211,4 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 - **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Network/` (assembly `SpaghettiWires.Network`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Network/`.
   - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
-- **Wyszukiwanie trasy** (4.3): `CablePathfinder.TryFindPath` zwraca `NetworkPath` (węzły, kable, długość). Waga kabla to `Length`. Parametry: filtr kabli i filtr węzłów (sprawdzany też dla końców trasy).
 - Do zrobienia: stan techniczny, ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
