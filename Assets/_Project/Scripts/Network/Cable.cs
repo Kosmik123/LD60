@@ -15,12 +15,16 @@ namespace SpaghettiWires.Network
         /// <summary>Liczba żył, czyli ile rozmów kabel przenosi naraz.</summary>
         public int Pairs { get; }
 
-        public Cable(int id, int a, int b, int pairs)
+        /// <summary>Waga do wyboru najkrótszej trasy. Ustawiana przez reguły z pozycji węzłów.</summary>
+        public float Length { get; }
+
+        public Cable(int id, int a, int b, int pairs, float length)
         {
             Id = id;
             A = a;
             B = b;
             Pairs = pairs;
+            Length = length;
         }
 
         public bool IsConnectedTo(int nodeId) => A == nodeId || B == nodeId;
@@ -35,6 +39,6 @@ namespace SpaghettiWires.Network
             throw new ArgumentException($"Cable #{Id} is not connected to node #{nodeId}.", nameof(nodeId));
         }
 
-        public override string ToString() => $"Cable#{Id} ({A}-{B}, pairs: {Pairs})";
+        public override string ToString() => $"Cable#{Id} ({A}-{B}, pairs: {Pairs}, length: {Length})";
     }
 }
