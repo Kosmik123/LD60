@@ -15,7 +15,7 @@ namespace SpaghettiWires.Views
         private const int Segments = 16;
 
         [SerializeField] private float widthPerSqrtPair = 0.05f;
-        [SerializeField] private float sagPerMeter = 0.05f;
+        [SerializeField] private float sagPerMeter = CableCurve.DefaultSagPerMeter;
         [Tooltip("Losowe odchylenie zwisu, ±procent.")]
         [Range(0f, 1f)] [SerializeField] private float sagVariation = 0.4f;
         [SerializeField] private Color color = new Color(0.08f, 0.08f, 0.08f);

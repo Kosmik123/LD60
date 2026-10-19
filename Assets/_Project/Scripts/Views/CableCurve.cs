@@ -9,6 +9,9 @@ namespace SpaghettiWires.Views
     /// </summary>
     public static class CableCurve
     {
+        /// <summary>Typowy zwis kabla: 5 cm na metr przęsła.</summary>
+        public const float DefaultSagPerMeter = 0.05f;
+
         /// <summary>
         /// Wypełnia <paramref name="points"/> punktami kabla od <paramref name="a"/> do <paramref name="b"/>.
         /// <paramref name="sag"/> to zwis w najniższym punkcie (w metrach, poniżej prostej a–b).
