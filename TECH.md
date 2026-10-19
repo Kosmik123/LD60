@@ -208,4 +208,7 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 9. Stan implementacji
 
-- Gałąź `Network` zawiera **pierwszy prototyp** sieci w starym modelu: kabel jako trasa przez wiele węzłów i zapisane na sztywno drzewo usług (`ServiceNode`). Do przepisania na model z sekcji 4.
+- **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Network/` (assembly `SpaghettiWires.Network`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Network/`.
+  - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
+  - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
+- Do zrobienia: stan techniczny, ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
