@@ -46,6 +46,18 @@ namespace SpaghettiWires.Tests.Networking
         }
 
         [Test]
+        public void NextCableId_IsTheIdOfTheNextLaidCable()
+        {
+            var a = _network.AddNode(NodeKind.Pole);
+            var b = _network.AddNode(NodeKind.Pole);
+            _network.RemoveCable(_network.AddCable(a.Id, b.Id, 1, 5f).Id);
+
+            var expected = _network.NextCableId;
+
+            Assert.AreEqual(expected, _network.AddCable(a.Id, b.Id, 1, 5f).Id);
+        }
+
+        [Test]
         public void AddCable_AllowsParallelCablesBetweenSameNodes()
         {
             var a = _network.AddNode(NodeKind.Pole);

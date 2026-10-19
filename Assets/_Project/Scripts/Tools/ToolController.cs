@@ -35,6 +35,9 @@ namespace SpaghettiWires.Tools
         /// <summary>Komunikat dla gracza, np. powód, dla którego akcja się nie udała.</summary>
         public event Action<string> MessagePosted;
 
+        /// <summary>Pokazuje komunikat w linii komunikatów nad paskiem narzędzi.</summary>
+        public void PostMessage(string message) => MessagePosted?.Invoke(message);
+
         public IBuildActions BuildActions
         {
             get => buildActions.Value;
@@ -43,8 +46,7 @@ namespace SpaghettiWires.Tools
 
         private void Start()
         {
-            _context = new ToolContext(pointer, buildActions.Value, gridOverlay, cellHighlight, cablePreview,
-                message => MessagePosted?.Invoke(message));
+            _context = new ToolContext(pointer, buildActions.Value, gridOverlay, cellHighlight, cablePreview, PostMessage);
             _tools[ToolType.Cable] = new CableTool(_context, pairs: 1);
             _tools[ToolType.Trunk] = new CableTool(_context, trunkPairs);
             _tools[ToolType.Pole] = new PoleTool(_context);

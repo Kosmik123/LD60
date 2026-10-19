@@ -19,10 +19,17 @@ namespace SpaghettiWires.Views
         [Tooltip("Losowe odchylenie zwisu, ±procent.")]
         [Range(0f, 1f)] [SerializeField] private float sagVariation = 0.4f;
         [SerializeField] private Color color = new Color(0.08f, 0.08f, 0.08f);
+        [Tooltip("Kolor kabla, którym idzie choć jedna rozmowa (PLAN etap 5: świecące kable).")]
+        [SerializeField] private Color callColor = new Color(1f, 0.78f, 0.2f);
 
         private readonly List<Vector3> _points = new List<Vector3>();
         private LineRenderer _line;
         private float _sagScale = 1f;
+        private bool _inCall;
+        private bool _highlighted;
+
+        /// <summary>Czy kablem idzie teraz rozmowa.</summary>
+        public bool InCall => _inCall;
 
         public int Id { get; private set; }
         public NodeView From { get; private set; }
@@ -74,8 +81,27 @@ namespace SpaghettiWires.Views
                 _line.SetPosition(i, _points[i]);
         }
 
-        public void SetHighlight(Color highlight) => SetColor(highlight);
-        public void ClearHighlight() => SetColor(color);
+        /// <summary>Kabel świeci, gdy idzie nim rozmowa. Podświetlenie narzędzia ma pierwszeństwo, ale go nie kasuje.</summary>
+        public void SetInCall(bool inCall)
+        {
+            _inCall = inCall;
+            if (!_highlighted)
+                SetColor(RestingColor);
+        }
+
+        public void SetHighlight(Color highlight)
+        {
+            _highlighted = true;
+            SetColor(highlight);
+        }
+
+        public void ClearHighlight()
+        {
+            _highlighted = false;
+            SetColor(RestingColor);
+        }
+
+        private Color RestingColor => _inCall ? callColor : color;
 
         private void SetColor(Color value)
         {

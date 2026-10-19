@@ -2,7 +2,9 @@ using System.Collections;
 using System.Linq;
 using NUnit.Framework;
 using SpaghettiWires.Map;
+using SpaghettiWires.Networking;
 using SpaghettiWires.Sandbox;
+using SpaghettiWires.Simulation;
 using SpaghettiWires.Tools;
 using SpaghettiWires.Views;
 using UnityEngine;
@@ -15,7 +17,7 @@ namespace SpaghettiWires.Tests
 {
     /// <summary>
     /// Sprawdza scenę gry od kursora do efektu: symulowana mysz → wskaźnik (raycast, siatka) → narzędzie → akcja.
-    /// Akcje obsługuje tymczasowy sandbox, więc test nie zależy od sieci.
+    /// Akcje obsługuje tymczasowy sandbox, który prowadzi sieć gry. Rozmowy wymusza wejście testowe (C, G).
     /// </summary>
     public class ToolsPlayModeTests
     {
@@ -24,6 +26,8 @@ namespace SpaghettiWires.Tests
         private InputSettings _originalInputSettings;
         private InputSettings _testInputSettings;
         private Mouse _mouse;
+        private Keyboard _keyboard;
+        private CallSimulation _calls;
         private Camera _camera;
         private ToolController _tools;
         private ViewRegistry _views;
@@ -46,6 +50,8 @@ namespace SpaghettiWires.Tests
 
             _mouse = InputSystem.AddDevice<Mouse>();
             _mouse.MakeCurrent();
+            _keyboard = InputSystem.AddDevice<Keyboard>();
+            _keyboard.MakeCurrent();
 
             // Nowa mysz stoi w (0, 0), czyli na krawędzi ekranu, co przesuwałoby kamerę. Środek ekranu jest bezpieczny.
             yield return Move(new Vector2(Screen.width / 2f, Screen.height / 2f), pressed: false);
@@ -58,12 +64,17 @@ namespace SpaghettiWires.Tests
             _views = Object.FindAnyObjectByType<ViewRegistry>();
             _grid = Object.FindAnyObjectByType<MapGridBehaviour>().Grid;
             _sandbox = Object.FindAnyObjectByType<SandboxBuildActions>();
+
+            // Losowe rozmowy przeszkadzałyby w testach. Testy rozmów zaczynają je same.
+            _calls = Object.FindAnyObjectByType<CallSimulationRunner>().Simulation;
+            _calls.GeneratorEnabled = false;
         }
 
         [TearDown]
         public void TearDown()
         {
             InputSystem.RemoveDevice(_mouse);
+            InputSystem.RemoveDevice(_keyboard);
 
             // Projekt nie ma pliku ustawień Input System, więc oryginał to obiekt w pamięci, który Unity mogło zwolnić.
             InputSystem.settings = _originalInputSettings != null
@@ -137,7 +148,60 @@ namespace SpaghettiWires.Tests
             Assert.IsEmpty(_views.Cables);
         }
 
+        [UnityTest]
+        public IEnumerator DebugInput_COverCallerThenCOverCallee_StartsCallAndLightsCable()
+        {
+            var (from, to) = FindPickableHousePair();
+            _sandbox.LayCable(from.Id, to.Id, 1);
+            var cable = _views.Cables.Single();
+
+            yield return Move(PickPoint(from), pressed: false);
+            yield return PressKey(Key.C);
+            yield return Move(PickPoint(to), pressed: false);
+            yield return PressKey(Key.C);
+
+            var call = _calls.Network.Traffic.Calls.Single();
+            Assert.AreEqual(from.Id, call.From.Value);
+            Assert.AreEqual(to.Id, call.To.Value);
+            Assert.IsTrue(cable.InCall, "The cable carrying the call glows");
+        }
+
+        [UnityTest]
+        public IEnumerator Call_WhenItEnds_CableStopsGlowing()
+        {
+            var (from, to) = FindPickableHousePair();
+            _sandbox.LayCable(from.Id, to.Id, 1);
+            var cable = _views.Cables.Single();
+            Assert.AreEqual(CallOutcome.Connected,
+                _calls.TryCall(new NodeId(from.Id), new NodeId(to.Id)));
+            Assert.IsTrue(cable.InCall);
+
+            _calls.Tick(1000f);
+            yield return null;
+
+            Assert.IsFalse(cable.InCall);
+            Assert.IsEmpty(_calls.Network.Traffic.Calls);
+        }
+
+        [UnityTest]
+        public IEnumerator DebugInput_G_TogglesCallGenerator()
+        {
+            yield return PressKey(Key.G);
+            Assert.IsTrue(_calls.GeneratorEnabled);
+
+            yield return PressKey(Key.G);
+            Assert.IsFalse(_calls.GeneratorEnabled);
+        }
+
         #region Helpers
+
+        private IEnumerator PressKey(Key key)
+        {
+            InputSystem.QueueStateEvent(_keyboard, new KeyboardState(key));
+            yield return null;
+            InputSystem.QueueStateEvent(_keyboard, new KeyboardState());
+            yield return null;
+        }
 
         private IEnumerator Click(Vector2 screenPosition)
         {

@@ -1,4 +1,4 @@
-{
+﻿{
     "name": "SpaghettiWires.PlayMode.Tests",
     "rootNamespace": "SpaghettiWires.Tests",
     "references": [
@@ -6,6 +6,8 @@
         "SpaghettiWires.Views",
         "SpaghettiWires.Tools",
         "SpaghettiWires.Sandbox",
+        "SpaghettiWires.Networking",
+        "SpaghettiWires.Simulation",
         "Unity.InputSystem",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

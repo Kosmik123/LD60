@@ -527,6 +527,91 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!1 &627531555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 627531559}
+  - component: {fileID: 627531556}
+  - component: {fileID: 627531558}
+  - component: {fileID: 627531557}
+  m_Layer: 0
+  m_Name: Call Simulation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &627531556
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627531555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fe4cb7ff614aa64eb38e7305d8d9335, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SpaghettiWires.Simulation::SpaghettiWires.Simulation.CallSimulationRunner
+  network:
+    serializedValue:
+      serializedObject: {fileID: 1296632933}
+  settings:
+    callsPerHousePerMinute: 1
+    growthPerMinute: 0.25
+    minDuration: 6
+    maxDuration: 12
+  generatorEnabled: 1
+  seed: 0
+--- !u!114 &627531557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627531555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc3ceb7613a394d4981eaf846ba29611, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SpaghettiWires.DebugTools::SpaghettiWires.DebugTools.CallDebugInput
+  pointer: {fileID: 872057603}
+  simulation: {fileID: 627531556}
+  tools: {fileID: 872057602}
+--- !u!114 &627531558
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627531555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5318da4f945e62b40b361336e02b94d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SpaghettiWires.UI::SpaghettiWires.UI.CallTrafficView
+  simulation: {fileID: 627531556}
+  views: {fileID: 351612543}
+--- !u!4 &627531559
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 627531555}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &685094670
 GameObject:
   m_ObjectHideFlags: 0
@@ -1253,6 +1338,80 @@ Transform:
   m_Children: []
   m_Father: {fileID: 790044279}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2072087884
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2072087887}
+  - component: {fileID: 2072087886}
+  - component: {fileID: 2072087885}
+  m_Layer: 0
+  m_Name: CallIndicators
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2072087885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072087884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 24a47779d1088024fa9d4010fcac0916, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: SpaghettiWires.UI::SpaghettiWires.UI.CallIndicatorsView
+  simulation: {fileID: 627531556}
+  views: {fileID: 351612543}
+  sceneCamera: {fileID: 403874642}
+  styleSheet: {fileID: 7433441132597879392, guid: c71e49e0e18fd1a40a9d6500d00c1c02, type: 3}
+  heightAboveNode: 5.5
+  messageDuration: 2.5
+--- !u!114 &2072087886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072087884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 19102, guid: 0000000000000000e000000000000000, type: 0}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.dll::UnityEngine.UIElements.UIDocument
+  m_PanelSettings: {fileID: 11400000, guid: 54c045a72c2e7a24fa98cf5e95647ed3, type: 2}
+  m_ParentUI: {fileID: 0}
+  sourceAsset: {fileID: 0}
+  m_SortingOrder: 0
+  m_Position: 0
+  m_WorldSpaceSizeMode: 1
+  m_WorldSpaceWidth: 1920
+  m_WorldSpaceHeight: 1080
+  m_PivotReferenceSize: 0
+  m_Pivot: 0
+  m_WorldSpaceCollider: {fileID: 0}
+--- !u!4 &2072087887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2072087884}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -1266,3 +1425,5 @@ SceneRoots:
   - {fileID: 1296632934}
   - {fileID: 1166728134}
   - {fileID: 872057604}
+  - {fileID: 627531559}
+  - {fileID: 2072087887}

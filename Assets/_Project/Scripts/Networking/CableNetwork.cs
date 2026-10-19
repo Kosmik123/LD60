@@ -29,6 +29,12 @@ namespace SpaghettiWires.Networking
         public IReadOnlyCollection<Node> Nodes => _nodes.Values;
         public IReadOnlyCollection<Cable> Cables => _cables.Values;
 
+        /// <summary>
+        /// Id, które dostanie następny położony kabel. Gra ma jednego gracza, więc to Id kabla,
+        /// który gracz właśnie przeciąga (podgląd punktu przyczepu na słupie zależy od niego).
+        /// </summary>
+        public CableId NextCableId => new CableId(_nextCableId);
+
         public Node AddNode(NodeKind kind)
         {
             var node = new Node(new NodeId(_nextNodeId++), kind);

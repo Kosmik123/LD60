@@ -1,9 +1,11 @@
-{
+﻿{
     "name": "SpaghettiWires.UI",
     "rootNamespace": "SpaghettiWires.UI",
     "references": [
         "SpaghettiWires.Tools",
-        "SpaghettiWires.Views"
+        "SpaghettiWires.Views",
+        "SpaghettiWires.Networking",
+        "SpaghettiWires.Simulation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

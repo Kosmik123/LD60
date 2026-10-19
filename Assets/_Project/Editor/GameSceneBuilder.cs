@@ -2,8 +2,10 @@ using System;
 using System.IO;
 using System.Linq;
 using SpaghettiWires.CameraControl;
+using SpaghettiWires.DebugTools;
 using SpaghettiWires.Map;
 using SpaghettiWires.Sandbox;
+using SpaghettiWires.Simulation;
 using SpaghettiWires.Tools;
 using SpaghettiWires.UI;
 using SpaghettiWires.Views;
@@ -130,9 +132,60 @@ namespace SpaghettiWires.EditorTools
             SetField(gameOver, "styleSheet", LoadStyleSheet("GameOver"));
             SetList(pointer, "blockingDocuments", ui, gameOver.GetComponent<UIDocument>());
 
+            AddCallSimulation();
+
             EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[GameSceneBuilder] Zapisano {ScenePath}");
+        }
+
+        /// <summary>
+        /// Dokłada symulację rozmów do istniejącej sceny gry, bez przebudowy reszty sceny (zachowuje ręczne zmiany).
+        /// Nic nie robi, jeśli scena już ją ma.
+        /// </summary>
+        [MenuItem("Tools/Spaghetti Wires/Dodaj symulację rozmów do sceny")]
+        public static void AddCallSimulationToScene()
+        {
+            EditorSceneManager.OpenScene(ScenePath);
+            if (AddCallSimulation())
+            {
+                EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
+                Debug.Log($"[GameSceneBuilder] Dodano symulację rozmów do {ScenePath}");
+            }
+        }
+
+        /// <summary>Symulacja rozmów, jej widoki i wymuszanie rozmów do testów (PLAN etap 5).</summary>
+        private static bool AddCallSimulation()
+        {
+            if (Object.FindAnyObjectByType<CallSimulationRunner>() != null)
+                return false;
+
+            var sandbox = Object.FindAnyObjectByType<SandboxBuildActions>();
+            var views = Object.FindAnyObjectByType<ViewRegistry>();
+            var pointer = Object.FindAnyObjectByType<ScenePointer>();
+            var tools = Object.FindAnyObjectByType<ToolController>();
+            var panelSettings = Object.FindAnyObjectByType<UIDocument>().panelSettings;
+
+            var simulationObject = new GameObject("Call Simulation");
+            var runner = simulationObject.AddComponent<CallSimulationRunner>();
+            runner.NetworkSource = sandbox;
+            EditorUtility.SetDirty(runner);
+
+            var traffic = simulationObject.AddComponent<CallTrafficView>();
+            SetField(traffic, "simulation", runner);
+            SetField(traffic, "views", views);
+
+            var debugInput = simulationObject.AddComponent<CallDebugInput>();
+            SetField(debugInput, "pointer", pointer);
+            SetField(debugInput, "simulation", runner);
+            SetField(debugInput, "tools", tools);
+
+            var indicators = CreateDocument<CallIndicatorsView>("CallIndicators", panelSettings);
+            SetField(indicators, "simulation", runner);
+            SetField(indicators, "views", views);
+            SetField(indicators, "sceneCamera", Camera.main);
+            SetField(indicators, "styleSheet", LoadStyleSheet("Calls"));
+            return true;
         }
 
         /// <summary>

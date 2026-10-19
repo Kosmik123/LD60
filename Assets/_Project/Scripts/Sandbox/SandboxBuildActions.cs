@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using SpaghettiWires.Map;
+using SpaghettiWires.Networking;
+using SpaghettiWires.Simulation;
 using SpaghettiWires.Tools;
 using SpaghettiWires.Views;
 using UnityEngine;
@@ -7,12 +9,12 @@ using UnityEngine;
 namespace SpaghettiWires.Sandbox
 {
     /// <summary>
-    /// TYMCZASOWE: najprostsza implementacja akcji gracza, żeby przetestować narzędzia i widoki,
-    /// zanim powstaną sieć (etap 1 planu) i reguły budowy (etap 2).
-    /// Trzyma tylko zajętość pól i listę kabli, bez rozmów, awarii, limitów słupów i pieniędzy.
-    /// Do usunięcia, gdy prawdziwe reguły zaimplementują <see cref="IBuildActions"/>.
+    /// TYMCZASOWE: najprostsza implementacja akcji gracza, zanim powstaną reguły budowy (PLAN etap 2).
+    /// Prowadzi sieć gry (<see cref="PhoneNetwork"/>) i jej widoki: Id węzłów i kabli nadaje sieć,
+    /// a widoki dostają te same Id. Sprawdza zajętość pól, zasięg kabla, miejsca na słupie i przecinanie budynków,
+    /// ale nie liczy pieniędzy. Do usunięcia, gdy prawdziwe reguły zaimplementują <see cref="IBuildActions"/>.
     /// </summary>
-    public sealed class SandboxBuildActions : MonoBehaviour, IBuildActions
+    public sealed class SandboxBuildActions : MonoBehaviour, IBuildActions, IPhoneNetworkSource
     {
         [SerializeField] private MapGridBehaviour grid;
         [SerializeField] private ViewRegistry views;
@@ -27,11 +29,14 @@ namespace SpaghettiWires.Sandbox
         [SerializeField] private float cableSpan = 3f;
         [SerializeField] private float trunkSpan = 2.5f;
 
-        private readonly Dictionary<Vector2Int, int> _nodeByCell = new Dictionary<Vector2Int, int>();
-        private readonly Dictionary<int, Vector2Int> _cellByNode = new Dictionary<int, Vector2Int>();
-        private readonly Dictionary<int, (int from, int to, int pairs)> _cables = new Dictionary<int, (int from, int to, int pairs)>();
-        private int _nextNodeId = 1;
-        private int _nextCableId = 1;
+        private readonly Dictionary<Vector2Int, NodeId> _nodeByCell = new Dictionary<Vector2Int, NodeId>();
+        private readonly Dictionary<NodeId, Vector2Int> _cellByNode = new Dictionary<NodeId, Vector2Int>();
+        private PhoneNetwork _network;
+
+        /// <summary>Sieć gry. Tworzona przy pierwszym użyciu, więc jest gotowa niezależnie od kolejności Awake/Start.</summary>
+        public PhoneNetwork Network => _network ??= new PhoneNetwork();
+
+        private CableNetwork Structure => Network.Structure;
 
         private void Start() => SpawnStartHouses();
 
@@ -69,7 +74,7 @@ namespace SpaghettiWires.Sandbox
                 return BuildCheck.Fail("Kabel musi łączyć dwa różne miejsca.");
 
             float span = pairs > 1 ? trunkSpan : cableSpan;
-            if (MapGrid.CellDistance(_cellByNode[fromNodeId], _cellByNode[toNodeId]) > span)
+            if (MapGrid.CellDistance(CellOf(fromNodeId), CellOf(toNodeId)) > span)
                 return BuildCheck.Fail("Za daleko. Postaw słup po drodze.");
             if (!CanAttach(fromNodeId, pairs) || !CanAttach(toNodeId, pairs))
                 return BuildCheck.Fail("Słup jest pełny. Postaw kolejny słup.");
@@ -78,23 +83,24 @@ namespace SpaghettiWires.Sandbox
             return BuildCheck.Ok;
         }
 
-        public int NextCableId => _nextCableId;
+        public int NextCableId => Structure.NextCableId.Value;
 
         public void LayCable(int fromNodeId, int toNodeId, int pairs)
         {
-            int id = _nextCableId++;
-            _cables.Add(id, (fromNodeId, toNodeId, pairs));
-            views.SpawnCable(id, fromNodeId, toNodeId, pairs);
+            var mapGrid = grid.Grid;
+            float length = Vector3.Distance(mapGrid.CellToWorld(CellOf(fromNodeId)), mapGrid.CellToWorld(CellOf(toNodeId)));
+            var cable = Structure.AddCable(new NodeId(fromNodeId), new NodeId(toNodeId), pairs, length);
+            views.SpawnCable(cable.Id.Value, fromNodeId, toNodeId, pairs);
         }
 
         public void RemoveCable(int cableId)
         {
-            _cables.Remove(cableId);
+            // Najpierw sieć: zrywa rozmowy na kablu, a widoki jeszcze istnieją, gdy dostają o tym zdarzenia.
+            Structure.RemoveCable(new CableId(cableId));
             views.RemoveCable(cableId);
         }
 
-        // Sandbox nie ma awarii, więc wszystkie żyły zawsze działają.
-        public int MeasureWorkingPairs(int cableId) => _cables[cableId].pairs;
+        public int MeasureWorkingPairs(int cableId) => Network.Condition.GetWorkingPairs(new CableId(cableId));
 
         // Pojemność i punkty przyczepu zna model węzła (CableAttachments), więc sandbox tylko go pyta.
         public bool TryGetSlotUsage(int nodeId, out int used, out int capacity)
@@ -112,12 +118,22 @@ namespace SpaghettiWires.Sandbox
         private bool CanAttach(int nodeId, int pairs) =>
             views.TryGetNode(nodeId, out var node) && node.Attachments.CanAttach(pairs);
 
+        private Vector2Int CellOf(int nodeId) => _cellByNode[new NodeId(nodeId)];
+
         private void AddNode(NodeVisualKind kind, Vector2Int cell)
         {
-            int id = _nextNodeId++;
-            _nodeByCell.Add(cell, id);
-            _cellByNode.Add(id, cell);
-            views.SpawnNode(id, kind, cell);
+            var node = Structure.AddNode(ToNodeKind(kind));
+            _nodeByCell.Add(cell, node.Id);
+            _cellByNode.Add(node.Id, cell);
+            views.SpawnNode(node.Id.Value, kind, cell);
         }
+
+        private static NodeKind ToNodeKind(NodeVisualKind kind) => kind switch
+        {
+            NodeVisualKind.House => NodeKind.House,
+            NodeVisualKind.Pole => NodeKind.Pole,
+            NodeVisualKind.Exchange => NodeKind.Exchange,
+            _ => throw new System.ArgumentOutOfRangeException(nameof(kind), kind, null),
+        };
     }
 }

@@ -1,10 +1,12 @@
-{
+﻿{
     "name": "SpaghettiWires.Sandbox",
     "rootNamespace": "SpaghettiWires.Sandbox",
     "references": [
         "SpaghettiWires.Map",
         "SpaghettiWires.Views",
-        "SpaghettiWires.Tools"
+        "SpaghettiWires.Tools",
+        "SpaghettiWires.Networking",
+        "SpaghettiWires.Simulation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
