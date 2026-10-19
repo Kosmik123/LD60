@@ -58,10 +58,17 @@ namespace SpaghettiWires.Tools
                 Vector3 start = _from.GetAnchorPosition(cableId, target.transform.position);
                 Vector3 end = target.GetAnchorPosition(cableId, _from.transform.position);
                 _context.CablePreview.Show(start, end, _pairs, color);
+                ShowPrice(target.transform.position, (start + end) / 2f);
             }
             else if (pointer.HasGroundPoint)
             {
-                _context.CablePreview.Show(_from.GetAnchorPosition(cableId, pointer.GroundPoint), pointer.GroundPoint, _pairs, color);
+                Vector3 start = _from.GetAnchorPosition(cableId, pointer.GroundPoint);
+                _context.CablePreview.Show(start, pointer.GroundPoint, _pairs, color);
+                ShowPrice(pointer.GroundPoint, (start + pointer.GroundPoint) / 2f);
+            }
+            else
+            {
+                _context.HidePrice();
             }
 
             if (!_context.WasReleasedThisFrame)
@@ -77,10 +84,25 @@ namespace SpaghettiWires.Tools
             Cancel();
         }
 
+        /// <summary>
+        /// Cena nad środkiem podglądu. Długość to odległość w poziomie od węzła startowego
+        /// do celu (węzła albo kursora), tak samo jak przy zakupie, czyli bez zwisu.
+        /// </summary>
+        private void ShowPrice(Vector3 end, Vector3 labelPosition)
+        {
+            if (_context.Pricing == null)
+                return;
+
+            Vector3 offset = end - _from.transform.position;
+            float length = new Vector2(offset.x, offset.z).magnitude;
+            _context.ShowPrice(labelPosition, _context.Pricing.GetCablePrice(length, _pairs));
+        }
+
         public void Cancel()
         {
             _from = null;
             _context.CablePreview.Hide();
+            _context.HidePrice();
             _context.HighlightNode(null, default);
         }
 

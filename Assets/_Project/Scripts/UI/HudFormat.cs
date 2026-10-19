@@ -19,6 +19,20 @@ namespace SpaghettiWires.UI
         public static string Money(int amount) =>
             amount.ToString("#,0", CultureInfo.InvariantCulture).Replace(',', ' ') + " $";
 
+        /// <summary>Cena za metr, np. „3.5 $/m”.</summary>
+        public static string MoneyPerMeter(float amount) =>
+            amount.ToString("0.##", CultureInfo.InvariantCulture) + " $/m";
+
+        /// <summary>Liczba żył z odmianą, np. „1 żyła”, „4 żyły”, „9 żył”.</summary>
+        public static string Pairs(int count)
+        {
+            int lastDigit = count % 10, lastTwo = count % 100;
+            string noun = count == 1 ? "żyła"
+                : lastDigit >= 2 && lastDigit <= 4 && (lastTwo < 12 || lastTwo > 14) ? "żyły"
+                : "żył";
+            return $"{count} {noun}";
+        }
+
         /// <summary>Reputacja 0–1 jako procent, np. „80%”.</summary>
         public static string Percent(float normalized) =>
             $"{Math.Round(Math.Clamp(normalized, 0f, 1f) * 100f, MidpointRounding.AwayFromZero)}%";

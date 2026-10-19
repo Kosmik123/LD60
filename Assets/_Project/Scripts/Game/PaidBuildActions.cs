@@ -13,7 +13,7 @@ namespace SpaghettiWires.Game
     /// Sprawdza, czy gracza stać, a przy zakupie pobiera pieniądze z <see cref="GameSession.Economy"/>.
     /// Długość kabla to odległość między polami węzłów, bez zwisu.
     /// </summary>
-    public sealed class PaidBuildActions : MonoBehaviour, IBuildActions
+    public sealed class PaidBuildActions : MonoBehaviour, IBuildActions, IBuildPricing
     {
         [SerializeField] private Serialized<IBuildActions> inner;
         [SerializeField] private GameSession session;
@@ -67,6 +67,11 @@ namespace SpaghettiWires.Game
 
         public int GetCablePrice(int fromNodeId, int toNodeId, int pairs) =>
             Prices.Cable(GetCableLength(fromNodeId, toNodeId), pairs);
+
+        public int PolePrice => Prices.Pole;
+        public float GetCablePricePerMeter(int pairs) => Prices.PerMeter(pairs);
+        public int GetCablePrice(float lengthMeters, int pairs) => Prices.Cable(lengthMeters, pairs);
+        public bool CanAfford(int price) => Economy.CanAfford(price);
 
         /// <summary>Odległość w metrach między polami dwóch węzłów.</summary>
         public float GetCableLength(int fromNodeId, int toNodeId)

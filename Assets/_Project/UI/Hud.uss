@@ -77,3 +77,19 @@
 .node-tooltip--full .node-tooltip__value {
     color: rgb(255, 110, 90);
 }
+
+/* Cena nad podglądem kabla. */
+.price-tag {
+    position: absolute;
+    translate: -50% -100%;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background-color: rgba(20, 20, 24, 0.85);
+    color: rgb(255, 220, 120);
+    font-size: 16px;
+    -unity-font-style: bold;
+}
+
+.price-tag--unaffordable {
+    color: rgb(255, 110, 90);
+}

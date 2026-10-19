@@ -30,6 +30,8 @@ namespace SpaghettiWires.UI
 
         private readonly Dictionary<ToolType, Button> _buttons = new Dictionary<ToolType, Button>();
         private Label _message;
+        private Label _hint;
+        private ToolType _hovered = ToolType.None;
         private float _messageHideTime;
 
         private void OnEnable()
@@ -48,6 +50,11 @@ namespace SpaghettiWires.UI
             _message.AddToClassList("message");
             hud.Add(_message);
 
+            // Cena narzędzia pod kursorem, a gdy kursor nie jest nad paskiem, wybranego narzędzia.
+            _hint = new Label { pickingMode = PickingMode.Ignore };
+            _hint.AddToClassList("tool-hint");
+            hud.Add(_hint);
+
             var bar = new VisualElement();
             bar.AddToClassList("toolbar");
             hud.Add(bar);
@@ -61,6 +68,9 @@ namespace SpaghettiWires.UI
                 keyLabel.AddToClassList("tool-button__key");
                 button.Add(keyLabel);
                 button.Add(new Label(label));
+
+                button.RegisterCallback<PointerEnterEvent>(_ => SetHovered(type));
+                button.RegisterCallback<PointerLeaveEvent>(_ => SetHovered(ToolType.None));
 
                 bar.Add(button);
                 _buttons[type] = button;
@@ -88,6 +98,38 @@ namespace SpaghettiWires.UI
         {
             foreach (var (type, button) in _buttons)
                 button.EnableInClassList(SelectedClass, type == current);
+            UpdateHint();
+        }
+
+        private void SetHovered(ToolType type)
+        {
+            _hovered = type;
+            UpdateHint();
+        }
+
+        private void UpdateHint()
+        {
+            string hint = GetPriceHint(_hovered != ToolType.None ? _hovered : tools.Current);
+            _hint.text = hint ?? string.Empty;
+            _hint.style.display = hint != null ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>Cennik narzędzia, np. „Kabel (1 żyła): 5 $/m”. Null, gdy budowa nie jest płatna.</summary>
+        private string GetPriceHint(ToolType type)
+        {
+            var pricing = tools.Pricing;
+            if (pricing == null)
+                return null;
+
+            return type switch
+            {
+                ToolType.Cable => $"Kabel ({HudFormat.Pairs(1)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(1))}",
+                ToolType.Trunk => $"Magistrala ({HudFormat.Pairs(tools.TrunkPairs)}): {HudFormat.MoneyPerMeter(pricing.GetCablePricePerMeter(tools.TrunkPairs))}",
+                ToolType.Pole => $"Słup: {HudFormat.Money(pricing.PolePrice)}",
+                ToolType.Meter => "Miernik: bez opłat",
+                ToolType.Scissors => "Nożyce: bez opłat",
+                _ => null,
+            };
         }
 
         private void OnMessagePosted(string message)

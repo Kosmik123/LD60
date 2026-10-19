@@ -25,6 +25,12 @@ namespace SpaghettiWires.Tools
         public CellHighlight CellHighlight { get; }
         public CablePreview CablePreview { get; }
 
+        /// <summary>Ceny, jeśli budowa jest płatna. Null = bez cen.</summary>
+        public IBuildPricing Pricing { get; }
+
+        /// <summary>Cena nad podglądem kabla, czyta ją UI.</summary>
+        public PricePreview PricePreview { get; private set; }
+
         public ToolContext(ScenePointer pointer, IBuildActions actions, GridOverlay gridOverlay,
             CellHighlight cellHighlight, CablePreview cablePreview, Action<string> postMessage)
         {
@@ -33,6 +39,7 @@ namespace SpaghettiWires.Tools
             GridOverlay = gridOverlay;
             CellHighlight = cellHighlight;
             CablePreview = cablePreview;
+            Pricing = actions as IBuildPricing;
             _postMessage = postMessage;
         }
 
@@ -43,6 +50,11 @@ namespace SpaghettiWires.Tools
         public bool WasReleasedThisFrame => Pointer.HasPointer && Mouse.current.leftButton.wasReleasedThisFrame;
 
         public void PostMessage(string message) => _postMessage?.Invoke(message);
+
+        public void ShowPrice(Vector3 position, int price) =>
+            PricePreview = new PricePreview(position, price, Pricing == null || Pricing.CanAfford(price));
+
+        public void HidePrice() => PricePreview = default;
 
         public void HighlightNode(NodeView node, Color color)
         {
@@ -72,6 +84,7 @@ namespace SpaghettiWires.Tools
             GridOverlay.Visible = false;
             CellHighlight.Hide();
             CablePreview.Hide();
+            HidePrice();
         }
 
         private void ClearNodeHighlight()

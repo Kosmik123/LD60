@@ -124,6 +124,11 @@ namespace SpaghettiWires.EditorTools
             SetField(poleTooltip, "sceneCamera", camera);
             SetField(poleTooltip, "styleSheet", LoadStyleSheet("Hud"));
 
+            var cablePrice = CreateDocument<CablePriceView>("CablePrice", panelSettings);
+            SetField(cablePrice, "tools", tools);
+            SetField(cablePrice, "sceneCamera", camera);
+            SetField(cablePrice, "styleSheet", LoadStyleSheet("Hud"));
+
             // Nad resztą UI, żeby zasłona przykrywała też pasek narzędzi.
             var gameOver = CreateDocument<GameOverView>("GameOver", panelSettings, sortingOrder: 10f);
             SetField(gameOver, "styleSheet", LoadStyleSheet("GameOver"));

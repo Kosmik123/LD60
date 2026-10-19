@@ -100,6 +100,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
   - [x] Koszty budowy: słup za stałą cenę, kabel i magistrala od długości (`BuildPrices`, `PaidBuildActions`).
+  - [x] Ceny widoczne przed zakupem: cennik przy pasku narzędzi i cena nad podglądem kabla (`CablePriceView`).
   - [ ] Pieniądze za udane rozmowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
 - [x] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.

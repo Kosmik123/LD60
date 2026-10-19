@@ -26,6 +26,25 @@ namespace SpaghettiWires.Tests
             Assert.AreEqual(expected, HudFormat.Money(amount));
         }
 
+        [TestCase(5f, "5 $/m")]
+        [TestCase(3.5f, "3.5 $/m")]
+        [TestCase(14f, "14 $/m")]
+        public void MoneyPerMeter_DropsTrailingZeros(float amount, string expected)
+        {
+            Assert.AreEqual(expected, HudFormat.MoneyPerMeter(amount));
+        }
+
+        [TestCase(1, "1 żyła")]
+        [TestCase(4, "4 żyły")]
+        [TestCase(9, "9 żył")]
+        [TestCase(12, "12 żył")]
+        [TestCase(16, "16 żył")]
+        [TestCase(22, "22 żyły")]
+        public void Pairs_UsesPolishPlural(int count, string expected)
+        {
+            Assert.AreEqual(expected, HudFormat.Pairs(count));
+        }
+
         [TestCase(1f, "100%")]
         [TestCase(0.806f, "81%")]
         [TestCase(0f, "0%")]

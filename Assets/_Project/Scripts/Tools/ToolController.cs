@@ -35,6 +35,15 @@ namespace SpaghettiWires.Tools
         /// <summary>Komunikat dla gracza, np. powód, dla którego akcja się nie udała.</summary>
         public event Action<string> MessagePosted;
 
+        /// <summary>Liczba żył magistrali kładzionej narzędziem Magistrala.</summary>
+        public int TrunkPairs => trunkPairs;
+
+        /// <summary>Ceny budowy, jeśli akcje gry są płatne. Null = bez cen.</summary>
+        public IBuildPricing Pricing => buildActions.Value as IBuildPricing;
+
+        /// <summary>Cena nad podglądem kabla w tej klatce.</summary>
+        public PricePreview PricePreview => _context?.PricePreview ?? default;
+
         public IBuildActions BuildActions
         {
             get => buildActions.Value;
