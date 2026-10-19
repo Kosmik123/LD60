@@ -94,7 +94,7 @@ Informacje o kablu zmieniają się w różnym tempie, z różnych powodów i są
 ```
 
 - **Zajęte żyły to nie fakt o kablu**, tylko wynik tego, jakie rozmowy trwają. Źródłem prawdy są rozmowy, a liczba zajętych żył to indeks utrzymywany przez warstwę ruchu.
-- **Wyszukiwanie trasy jest w warstwie ruchu**, bo tylko ona potrzebuje wszystkich trzech informacji. Struktura i stan techniczny nic nie wiedzą o rozmowach.
+- **Wyszukiwanie trasy wywołuje warstwa ruchu**, bo tylko ona zna wszystkie trzy informacje. Sam algorytm (`CablePathfinder`) działa na strukturze, a wagę kabla i dostępność kabli i węzłów dostaje z zewnątrz jako funkcje. Struktura i stan techniczny nic nie wiedzą o rozmowach.
 - **Synchronizacja cyklu życia przez zdarzenia:** struktura emituje „kabel usunięty”, a stan i ruch sprzątają po sobie (ruch zrywa rozmowy na tym kablu). Stan emituje „żyły uszkodzone”, a ruch zrywa nadmiarowe rozmowy.
 - Na jam wszystkie trzy warstwy trzyma jedna klasa-fasada (np. `PhoneNetwork`), która jest jedynym punktem wejścia dla reguł i symulacji.
 
@@ -211,4 +211,5 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 - **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Network/` (assembly `SpaghettiWires.Network`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Network/`.
   - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
+- **Wyszukiwanie trasy** (4.3): `CablePathfinder.TryFindPath` zwraca `NetworkPath` (węzły, kable, długość). Parametry: waga kabla (brak = 1), filtr kabli i filtr węzłów (sprawdzany też dla końców trasy).
 - Do zrobienia: stan techniczny, ruch, fasada `PhoneNetwork`, reguły, symulacja, widoki.
