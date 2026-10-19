@@ -77,11 +77,12 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [ ] Tworzenie i usuwanie widoków w reakcji na zdarzenia sieci, słownik `Id → widok`.
 
 ### 4. Input i narzędzia (ok. 4–5 h)
-- [ ] Pasek narzędzi i klawisze 1–5.
+- [x] Pasek narzędzi i klawisze 1–5 (`ToolbarView`, `ToolController`).
 - [ ] **Słup:** stawianie na wolnym polu.
 - [ ] **Kabel:** przeciągnij od węzła do węzła, z podglądem i kolorem poprawności.
 - [ ] **Nożyce:** usuń kabel. **Miernik:** pokaż sprawne żyły.
 - [ ] Wybieranie obiektów myszą (raycast → `Id`) i podświetlanie pod kursorem.
+- [x] Okienko nad słupem z zajętością miejsc, np. `7/12` (`PoleTooltipView`). Dane na razie z sandboxa przez `IBuildActions.TryGetSlotUsage`.
 
 > **Kamień milowy A:** można stawiać słupy i łączyć domy kablami. Nic jeszcze nie dzwoni.
 
@@ -94,7 +95,9 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
 - [ ] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
+  - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`). Brakuje wykrywania przegranej.
 - [ ] HUD: pieniądze, reputacja, czas.
+  - [x] Widok HUD: pieniądze i reputacja w lewym górnym rogu, czas w prawym (`HudView.SetMoney`, `SetReputation`, `SetTime`). Brakuje podpięcia ekonomii i zegara gry.
 
 > **Kamień milowy B:** grywalna pętla. Budujesz, ludzie dzwonią, zarabiasz albo przegrywasz. **Od tego momentu warto testować na innych osobach.**
 

@@ -39,5 +39,11 @@ namespace SpaghettiWires.Tools
 
         /// <summary>Miernik: liczba sprawnych żył kabla.</summary>
         int MeasureWorkingPairs(int cableId);
+
+        /// <summary>
+        /// Zajętość miejsc na słupie (GDD 3.3): ile miejsc zajmują kable i ile ich jest.
+        /// Zwraca false dla węzłów bez limitu miejsc (dom, centrala).
+        /// </summary>
+        bool TryGetSlotUsage(int nodeId, out int used, out int capacity);
     }
 }
