@@ -65,12 +65,19 @@ namespace SpaghettiWires.Views
             }
         }
 
-        // Domy obrócone losowo o wielokrotność 90°, żeby punkt przyczepu na ścianie wypadał z różnych stron.
-        // Losowanie zależy od Id, więc dom zawsze stoi tak samo.
-        private static Quaternion GetRotation(int id, NodeVisualKind kind) =>
-            kind == NodeVisualKind.House
-                ? Quaternion.Euler(0f, 90f * new System.Random(id).Next(4), 0f)
-                : Quaternion.identity;
+        // Losowy obrót wokół osi pionowej. Losowanie zależy od Id, więc węzeł zawsze stoi tak samo.
+        // Dom: o wielokrotność 90°, żeby stał równo z siatką, a uchwyt na ścianie wypadał z różnych stron.
+        // Słup: o dowolny kąt, żeby poprzeczki nie były wszystkie ustawione w jedną stronę.
+        private static Quaternion GetRotation(int id, NodeVisualKind kind)
+        {
+            var random = new System.Random(id);
+            return kind switch
+            {
+                NodeVisualKind.House => Quaternion.Euler(0f, 90f * random.Next(4), 0f),
+                NodeVisualKind.Pole => Quaternion.Euler(0f, 360f * (float)random.NextDouble(), 0f),
+                _ => Quaternion.identity,
+            };
+        }
 
         public bool TryGetNode(int id, out NodeView view) => _nodes.TryGetValue(id, out view);
 

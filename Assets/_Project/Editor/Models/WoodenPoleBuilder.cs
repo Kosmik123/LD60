@@ -19,9 +19,10 @@ namespace SpaghettiWires.EditorTools
         private const string MaterialsFolder = "Assets/_Project/Materials";
 
         // Wymiary w metrach.
-        private const float PoleHeight = 7f;
+        // Słup mniej więcej tej wysokości co dom (4,2 m z dachem): izolatory tuż nad dachami.
+        private const float PoleHeight = 4.5f;
         private const float PoleDiameter = 0.24f;
-        private const float CrossarmHeight = 6.6f; // wysokość środka poprzeczki
+        private const float CrossarmHeight = 4.1f; // wysokość środka poprzeczki
         private const float CrossarmLength = 1.4f;
         private const float CrossarmThickness = 0.1f;
         private const float BraceThickness = 0.04f;
