@@ -14,15 +14,14 @@ namespace SpaghettiWires.Sandbox
     /// a widoki dostają te same Id. Sprawdza zajętość pól, zasięg kabla, miejsca na słupie i przecinanie budynków,
     /// ale nie liczy pieniędzy. Do usunięcia, gdy prawdziwe reguły zaimplementują <see cref="IBuildActions"/>.
     /// </summary>
-    public sealed class SandboxBuildActions : MonoBehaviour, IBuildActions, IPhoneNetworkSource
+    public sealed class SandboxBuildActions : MonoBehaviour, IBuildActions, IPhoneNetworkSource, IHouseSpawner
     {
         [SerializeField] private MapGridBehaviour grid;
         [SerializeField] private ViewRegistry views;
 
-        [Header("Start")]
-        [SerializeField] private int startHouses = 8;
-        [Tooltip("Promień (w polach) wokół środka mapy, w którym pojawiają się domy na start.")]
-        [SerializeField] private int startRadius = 5;
+        [Header("Nowe domy")]
+        [Tooltip("Najmniejsza odległość (w polach) nowego domu od istniejącego, żeby między nimi zostało miejsce.")]
+        [SerializeField] private float minHouseDistance = 2f;
         [SerializeField] private int seed = 60;
 
         [Header("Zasięg kabli (w polach)")]
@@ -31,30 +30,50 @@ namespace SpaghettiWires.Sandbox
 
         private readonly Dictionary<Vector2Int, NodeId> _nodeByCell = new Dictionary<Vector2Int, NodeId>();
         private readonly Dictionary<NodeId, Vector2Int> _cellByNode = new Dictionary<NodeId, Vector2Int>();
+        private readonly List<Vector2Int> _houseCells = new List<Vector2Int>();
         private PhoneNetwork _network;
+        private System.Random _random;
 
         /// <summary>Sieć gry. Tworzona przy pierwszym użyciu, więc jest gotowa niezależnie od kolejności Awake/Start.</summary>
         public PhoneNetwork Network => _network ??= new PhoneNetwork();
 
         private CableNetwork Structure => Network.Structure;
 
-        private void Start() => SpawnStartHouses();
-
-        public void SpawnStartHouses()
+        /// <summary>
+        /// Pierwszy dom staje na środku mapy, każdy następny w zasięgu zwykłego kabla od losowego istniejącego domu,
+        /// więc zwykle da się go podłączyć bez słupa.
+        /// </summary>
+        public bool TrySpawnHouse()
         {
             var mapGrid = grid.Grid;
-            var center = mapGrid.Size / 2;
-            var random = new System.Random(seed);
+            _random ??= new System.Random(seed);
 
-            for (int attempts = 0, spawned = 0; spawned < startHouses && attempts < 1000; attempts++)
+            if (_houseCells.Count == 0)
             {
-                var cell = center + new Vector2Int(random.Next(-startRadius, startRadius + 1), random.Next(-startRadius, startRadius + 1));
+                var center = mapGrid.Size / 2;
+                if (_nodeByCell.ContainsKey(center))
+                    return false;
+
+                AddNode(NodeVisualKind.House, center);
+                return true;
+            }
+
+            int reach = Mathf.FloorToInt(cableSpan);
+            for (int attempt = 0; attempt < 200; attempt++)
+            {
+                var neighbour = _houseCells[_random.Next(_houseCells.Count)];
+                var cell = neighbour + new Vector2Int(_random.Next(-reach, reach + 1), _random.Next(-reach, reach + 1));
+                float distance = MapGrid.CellDistance(neighbour, cell);
+                if (distance < minHouseDistance || distance > cableSpan)
+                    continue;
                 if (!mapGrid.Contains(cell) || _nodeByCell.ContainsKey(cell))
                     continue;
 
                 AddNode(NodeVisualKind.House, cell);
-                spawned++;
+                return true;
             }
+
+            return false;
         }
 
         public BuildCheck CheckPole(Vector2Int cell)
@@ -128,6 +147,8 @@ namespace SpaghettiWires.Sandbox
             var node = Structure.AddNode(ToNodeKind(kind));
             _nodeByCell.Add(cell, node.Id);
             _cellByNode.Add(node.Id, cell);
+            if (kind == NodeVisualKind.House)
+                _houseCells.Add(cell);
             views.SpawnNode(node.Id.Value, kind, cell);
         }
 

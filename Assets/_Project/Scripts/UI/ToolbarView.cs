@@ -106,8 +106,15 @@ namespace SpaghettiWires.UI
 
         private void OnToolUnlocked(ToolType type)
         {
-            if (_buttons.TryGetValue(type, out var button))
-                button.SetEnabled(true);
+            if (!_buttons.TryGetValue(type, out var button))
+                return;
+
+            button.SetEnabled(true);
+            foreach (var (buttonType, key, label) in Buttons)
+            {
+                if (buttonType == type)
+                    OnMessagePosted($"New tool: {label} ({key})");
+            }
         }
 
         private void SetHovered(ToolType type)

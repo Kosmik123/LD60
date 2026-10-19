@@ -89,7 +89,7 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [x] **Nożyce:** usuń kabel. **Miernik:** pokaż sprawne żyły (na razie z sandboxa, bez awarii).
 - [x] Wybieranie obiektów myszą (raycast → `Id`) i podświetlanie pod kursorem (`ScenePointer`).
 - [x] Okienko nad słupem z zajętością miejsc, np. `7/12` (`PoleTooltipView`). Dane na razie z sandboxa przez `IBuildActions.TryGetSlotUsage`.
-- [x] Blokady narzędzi: na starcie tylko Kabel, reszta przez `ToolController.Unlock`. Co i kiedy odblokowuje, jeszcze do ustalenia.
+- [x] Blokady narzędzi: na starcie tylko Kabel, reszta przez `ToolController.Unlock`. Harmonogram odblokowań w `GameProgression`.
 
 > **Kamień milowy A:** można stawiać słupy i łączyć domy kablami. Nic jeszcze nie dzwoni.
 > Osiągnięty: budowa działa na prawdziwej sieci przez sandbox. Porządki techniczne (reguły zamiast sandboxa, widoki ze zdarzeń sieci) nie blokują kolejnych etapów.
@@ -123,8 +123,8 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [ ] Opcjonalne podpowiedzi wizualne: iskry, opadający kabel.
 
 ### 8. Rozwój miasta i centrala (ok. 3 h)
-- [ ] Generator nowych budynków na wolnych polach, z rosnącym tempem.
-- [ ] Startowa mapa: kilka domów, bez centrali.
+- [x] Generator nowych budynków na wolnych polach, z rosnącym tempem (`GameProgression`, na razie domy stawia sandbox przez `IHouseSpawner`).
+- [x] Startowa mapa: dwa domy w zasięgu kabla, bez centrali.
 - [ ] Budowanie centrali przez gracza (super-słup bez limitu, drogi).
 
 > **Kamień milowy C:** pełne MVP z GDD, czyli gra bez końca z rosnącym tempem.

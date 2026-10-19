@@ -93,6 +93,28 @@ namespace SpaghettiWires.Tests
         }
 
         [UnityTest]
+        public IEnumerator Scene_StartsWithTwoHousesInCableReach()
+        {
+            var houses = _views.Nodes.ToArray();
+            Assert.AreEqual(2, houses.Length);
+            Assert.IsTrue(_sandbox.CheckCable(houses[0].Id, houses[1].Id, 1).IsValid, "Start houses can be connected without a pole");
+            yield break;
+        }
+
+        [UnityTest]
+        public IEnumerator SpawnHouse_AddsHouseInCableReachOfAnotherHouse()
+        {
+            var before = _views.Nodes.ToArray();
+            Assert.IsTrue(_sandbox.TrySpawnHouse());
+            yield return null;
+
+            var added = _views.Nodes.Except(before).Single();
+            Assert.AreEqual(NodeVisualKind.House, added.Kind);
+            Assert.IsTrue(before.Any(house => _sandbox.CheckCable(house.Id, added.Id, 1).IsValid),
+                "The new house can be connected to an existing one without a pole");
+        }
+
+        [UnityTest]
         public IEnumerator Scene_StartsWithOnlyCableUnlocked()
         {
             Assert.IsTrue(_tools.IsUnlocked(ToolType.Cable));
