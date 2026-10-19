@@ -20,11 +20,11 @@ namespace SpaghettiWires.Tests.Networking
             _traffic = network.Traffic;
         }
 
-        private int House() => _structure.AddNode(NodeKind.House).Id;
-        private int Pole() => _structure.AddNode(NodeKind.Pole).Id;
-        private int Cable(int a, int b, float length = 1f, int pairs = 1) => _structure.AddCable(a, b, pairs, length).Id;
+        private NodeId House() => _structure.AddNode(NodeKind.House).Id;
+        private NodeId Pole() => _structure.AddNode(NodeKind.Pole).Id;
+        private CableId Cable(NodeId a, NodeId b, float length = 1f, int pairs = 1) => _structure.AddCable(a, b, pairs, length).Id;
 
-        private Call Start(int from, int to)
+        private Call Start(NodeId from, NodeId to)
         {
             Assert.IsTrue(_traffic.TryStartCall(from, to, out var call), $"Call {from}->{to} should start.");
             return call;
@@ -33,8 +33,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Call_TakesRouteAndOccupiesOnePairPerCable()
         {
-            int a = House(), pole = Pole(), b = House();
-            int toPole = Cable(a, pole, 2f), toB = Cable(pole, b, 3f);
+            NodeId a = House(), pole = Pole(), b = House();
+            CableId toPole = Cable(a, pole, 2f), toB = Cable(pole, b, 3f);
 
             var call = Start(a, b);
 
@@ -52,9 +52,9 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Route_MinimisesTotalLengthNotCableCount()
         {
-            int a = Pole(), b = Pole(), c = Pole(), d = Pole();
-            int direct = Cable(a, d, 10f);
-            int ab = Cable(a, b, 2f), bc = Cable(b, c, 2f), cd = Cable(c, d, 2f);
+            NodeId a = Pole(), b = Pole(), c = Pole(), d = Pole();
+            CableId direct = Cable(a, d, 10f);
+            CableId ab = Cable(a, b, 2f), bc = Cable(b, c, 2f), cd = Cable(c, d, 2f);
 
             CollectionAssert.AreEqual(new[] { ab, bc, cd }, Start(a, d).Cables);
             CollectionAssert.AreEqual(new[] { direct }, Start(a, d).Cables);
@@ -63,8 +63,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Route_PrefersFewerLongerCablesWhenShorterInTotal()
         {
-            int a = Pole(), b = Pole(), c = Pole();
-            int direct = Cable(a, c, 4f);
+            NodeId a = Pole(), b = Pole(), c = Pole();
+            CableId direct = Cable(a, c, 4f);
             Cable(a, b, 3f);
             Cable(b, c, 3f);
 
@@ -74,8 +74,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Trunk_CarriesOneCallPerPair()
         {
-            int a = Pole(), b = Pole();
-            int trunk = Cable(a, b, pairs: 4);
+            NodeId a = Pole(), b = Pole();
+            CableId trunk = Cable(a, b, pairs: 4);
 
             for (int i = 0; i < 4; i++)
                 Start(a, b);
@@ -88,8 +88,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void DamagedPairs_ReduceCapacity()
         {
-            int a = Pole(), b = Pole();
-            int trunk = Cable(a, b, pairs: 4);
+            NodeId a = Pole(), b = Pole();
+            CableId trunk = Cable(a, b, pairs: 4);
             _condition.Damage(trunk, 3);
 
             Start(a, b);
@@ -101,9 +101,9 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void BrokenOrFullCable_IsBypassed()
         {
-            int a = Pole(), b = Pole(), c = Pole();
-            int shortCable = Cable(a, c, 1f);
-            int viaB1 = Cable(a, b, 5f), viaB2 = Cable(b, c, 5f);
+            NodeId a = Pole(), b = Pole(), c = Pole();
+            CableId shortCable = Cable(a, c, 1f);
+            CableId viaB1 = Cable(a, b, 5f), viaB2 = Cable(b, c, 5f);
             _condition.Break(shortCable);
 
             CollectionAssert.AreEqual(new[] { viaB1, viaB2 }, Start(a, c).Cables);
@@ -113,7 +113,7 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void NoConnection_IsBusy()
         {
-            int a = House(), b = House();
+            NodeId a = House(), b = House();
 
             Assert.IsFalse(_traffic.TryStartCall(a, b, out _));
         }
@@ -121,7 +121,7 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void BusyHouse_CannotCallOrBeCalled()
         {
-            int a = House(), b = House(), c = House(), pole = Pole();
+            NodeId a = House(), b = House(), c = House(), pole = Pole();
             Cable(a, pole);
             Cable(b, pole);
             Cable(c, pole);
@@ -138,7 +138,7 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void House_RelaysCallAndIsBlockedMeanwhile()
         {
-            int a = House(), relay = House(), b = House(), other = House(), pole = Pole();
+            NodeId a = House(), relay = House(), b = House(), other = House(), pole = Pole();
             Cable(a, relay);
             Cable(relay, b);
             Cable(other, pole);
@@ -154,7 +154,7 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Route_AvoidsBusyHouse()
         {
-            int a = House(), busy = House(), b = House(), pole = Pole(), x = House(), y = House();
+            NodeId a = House(), busy = House(), b = House(), pole = Pole(), x = House(), y = House();
             Cable(a, busy, 1f);
             Cable(busy, b, 1f);
             Cable(a, pole, 5f);
@@ -169,8 +169,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void EndCall_ReleasesPairsAndNodes()
         {
-            int a = House(), pole = Pole(), b = House();
-            int toPole = Cable(a, pole), toB = Cable(pole, b);
+            NodeId a = House(), pole = Pole(), b = House();
+            CableId toPole = Cable(a, pole), toB = Cable(pole, b);
             var call = Start(a, b);
             Call ended = null;
             _traffic.CallEnded += c => ended = c;
@@ -189,9 +189,9 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Damage_DropsNewestCallsAboveWorkingPairs()
         {
-            int a = Pole(), b = Pole(), c = Pole();
-            int trunk = Cable(a, b, pairs: 4);
-            int tail = Cable(b, c, pairs: 4);
+            NodeId a = Pole(), b = Pole(), c = Pole();
+            CableId trunk = Cable(a, b, pairs: 4);
+            CableId tail = Cable(b, c, pairs: 4);
             var first = Start(a, b);
             var second = Start(a, c);
             var third = Start(a, c);
@@ -209,8 +209,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void Damage_KeepsCallsThatStillFit()
         {
-            int a = Pole(), b = Pole();
-            int trunk = Cable(a, b, pairs: 4);
+            NodeId a = Pole(), b = Pole();
+            CableId trunk = Cable(a, b, pairs: 4);
             Start(a, b);
             Start(a, b);
             var dropped = new List<Call>();
@@ -225,8 +225,8 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void RemovingCable_DropsItsCallsAndFreesTheRestOfTheirRoutes()
         {
-            int a = House(), pole = Pole(), b = House(), c = House(), d = House();
-            int toPole = Cable(a, pole), toB = Cable(pole, b);
+            NodeId a = House(), pole = Pole(), b = House(), c = House(), d = House();
+            CableId toPole = Cable(a, pole), toB = Cable(pole, b);
             Cable(c, pole);
             Cable(pole, d);
             var kept = Start(c, d);
@@ -246,7 +246,7 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void RemovingNode_DropsCallsThroughIt()
         {
-            int a = House(), pole = Pole(), b = House();
+            NodeId a = House(), pole = Pole(), b = House();
             Cable(a, pole);
             Cable(pole, b);
             var call = Start(a, b);
@@ -263,10 +263,10 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void LoadChangedEvents_CoverWholeRoute()
         {
-            int a = House(), pole = Pole(), b = House();
-            int toPole = Cable(a, pole), toB = Cable(pole, b);
-            var cables = new List<int>();
-            var nodes = new List<int>();
+            NodeId a = House(), pole = Pole(), b = House();
+            CableId toPole = Cable(a, pole), toB = Cable(pole, b);
+            var cables = new List<CableId>();
+            var nodes = new List<NodeId>();
             _traffic.CableLoadChanged += cables.Add;
             _traffic.NodeLoadChanged += nodes.Add;
 
@@ -279,10 +279,10 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void RemovedCable_IsNotReportedInLoadChange()
         {
-            int a = Pole(), b = Pole(), c = Pole();
-            int ab = Cable(a, b), bc = Cable(b, c);
+            NodeId a = Pole(), b = Pole(), c = Pole();
+            CableId ab = Cable(a, b), bc = Cable(b, c);
             Start(a, c);
-            var cables = new List<int>();
+            var cables = new List<CableId>();
             _traffic.CableLoadChanged += cables.Add;
 
             _structure.RemoveCable(ab);
@@ -293,12 +293,12 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void InvalidArguments_Throw()
         {
-            int a = House();
+            NodeId a = House();
 
             Assert.Throws<ArgumentException>(() => _traffic.TryStartCall(a, a, out _));
-            Assert.Throws<KeyNotFoundException>(() => _traffic.TryStartCall(a, 999, out _));
-            Assert.Throws<KeyNotFoundException>(() => _traffic.GetBusyPairs(999));
-            Assert.Throws<KeyNotFoundException>(() => _traffic.GetNodeLoad(999));
+            Assert.Throws<KeyNotFoundException>(() => _traffic.TryStartCall(a, new NodeId(999), out _));
+            Assert.Throws<KeyNotFoundException>(() => _traffic.GetBusyPairs(new CableId(999)));
+            Assert.Throws<KeyNotFoundException>(() => _traffic.GetNodeLoad(new NodeId(999)));
         }
 
         [Test]

@@ -6,15 +6,15 @@ namespace SpaghettiWires.Networking
     /// </summary>
     public sealed class Node
     {
-        public int Id { get; }
+        public NodeId Id { get; }
         public NodeKind Kind { get; }
 
-        public Node(int id, NodeKind kind)
+        public Node(NodeId id, NodeKind kind)
         {
             Id = id;
             Kind = kind;
         }
 
-        public override string ToString() => $"Node#{Id} ({Kind})";
+        public override string ToString() => $"{Id} ({Kind})";
     }
 }

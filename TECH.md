@@ -39,7 +39,7 @@ Testy: `Assets/_Project/Tests/EditMode/<Nazwa>/`, jedno assembly `SpaghettiWires
 ## 2. Zasady ogólne
 
 1. **Model danych jest oddzielony od sceny.** Logika gry to czyste klasy C# (bez `MonoBehaviour`). Obiekty na scenie tylko ją **wyświetlają**.
-2. **Odwołania przez Id (int)**, a nie przez referencje do `GameObject` ani do innych obiektów modelu.
+2. **Odwołania przez Id**, a nie przez referencje do `GameObject` ani do innych obiektów modelu. Każdy rodzaj Id to osobna struktura (`NodeId`, `CableId`, `CallId`) z `int` w środku, więc nie da się ich pomylić ze sobą ani z liczbą.
 3. **Widok nigdy nie zmienia modelu bezpośrednio.** Input wysyła polecenie, model je waliduje i emituje zdarzenie, a widok się aktualizuje.
 4. **Bez obliczeń co klatkę, jeśli nie trzeba.** Trasa rozmowy liczona jest raz, przy jej rozpoczęciu.
 5. **Logikę testujemy testami EditMode**, bez uruchamiania sceny.
@@ -221,7 +221,7 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 
 ## 8. Wydajność
 
-- Model to słowniki i listy intów.
+- Model to słowniki i listy Id (struktury z jednym `int`, bez alokacji).
 - Dijkstra przy każdej nowej rozmowie: przy setkach węzłów i kilku rozmowach na sekundę to pomijalny koszt.
 - Gdyby było trzeba: ograniczyć liczbę nowych rozmów na klatkę albo cache'ować trasy do pierwszej zmiany topologii.
 
@@ -230,7 +230,7 @@ Sieć wywołują bezpośrednio tylko testy i ewentualnie generator mapy.
 ## 9. Stan implementacji
 
 - **Struktura sieci** (4.1, 4.2): `CableNetwork`, `Node`, `Cable`, `NodeKind` w `Assets/_Project/Scripts/Networking/` (assembly `SpaghettiWires.Networking`, bez zależności od Unity). Testy: `Assets/_Project/Tests/EditMode/Networking/`.
-  - Id węzłów i kabli nadaje sieć i nie używa ich ponownie.
+  - Id węzłów i kabli (`NodeId`, `CableId`) nadaje sieć i nie używa ich ponownie. Domyślne Id (wartość 0) nie wskazuje żadnego obiektu.
   - Usunięcie węzła usuwa też jego kable (najpierw zdarzenia usunięcia kabli, potem węzła).
 - **Stan techniczny** (4.1, 4.4): `CableCondition` z referencją do struktury (tylko odczyt i zdarzenie usunięcia kabla).
   - `Damage(cableId, n)` i `Break(cableId)` dodają uszkodzone żyły, najwyżej do `Pairs`. Zdarzenie `PairsDamaged` tylko przy zmianie.

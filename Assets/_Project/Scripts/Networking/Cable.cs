@@ -8,9 +8,9 @@ namespace SpaghettiWires.Networking
     /// </summary>
     public sealed class Cable
     {
-        public int Id { get; }
-        public int A { get; }
-        public int B { get; }
+        public CableId Id { get; }
+        public NodeId A { get; }
+        public NodeId B { get; }
 
         /// <summary>Liczba żył, czyli ile rozmów kabel przenosi naraz.</summary>
         public int Pairs { get; }
@@ -18,7 +18,7 @@ namespace SpaghettiWires.Networking
         /// <summary>Waga do wyboru najkrótszej trasy. Ustawiana przez reguły z pozycji węzłów.</summary>
         public float Length { get; }
 
-        public Cable(int id, int a, int b, int pairs, float length)
+        public Cable(CableId id, NodeId a, NodeId b, int pairs, float length)
         {
             Id = id;
             A = a;
@@ -27,18 +27,18 @@ namespace SpaghettiWires.Networking
             Length = length;
         }
 
-        public bool IsConnectedTo(int nodeId) => A == nodeId || B == nodeId;
+        public bool IsConnectedTo(NodeId nodeId) => A == nodeId || B == nodeId;
 
         /// <summary>Zwraca węzeł na drugim końcu kabla.</summary>
-        public int GetOtherEnd(int nodeId)
+        public NodeId GetOtherEnd(NodeId nodeId)
         {
             if (nodeId == A)
                 return B;
             if (nodeId == B)
                 return A;
-            throw new ArgumentException($"Cable #{Id} is not connected to node #{nodeId}.", nameof(nodeId));
+            throw new ArgumentException($"{Id} is not connected to {nodeId}.", nameof(nodeId));
         }
 
-        public override string ToString() => $"Cable#{Id} ({A}-{B}, pairs: {Pairs}, length: {Length})";
+        public override string ToString() => $"{Id} ({A}-{B}, pairs: {Pairs}, length: {Length})";
     }
 }

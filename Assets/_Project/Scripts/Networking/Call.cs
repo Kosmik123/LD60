@@ -8,20 +8,20 @@ namespace SpaghettiWires.Networking
     /// </summary>
     public sealed class Call
     {
-        public int Id { get; }
-        public int From { get; }
-        public int To { get; }
+        public CallId Id { get; }
+        public NodeId From { get; }
+        public NodeId To { get; }
 
         /// <summary>Węzły trasy po kolei, od <see cref="From"/> do <see cref="To"/> (oba włącznie).</summary>
-        public IReadOnlyList<int> Nodes { get; }
+        public IReadOnlyList<NodeId> Nodes { get; }
 
         /// <summary>Kable trasy po kolei. Kabel <c>i</c> łączy węzły <c>i</c> oraz <c>i + 1</c>.</summary>
-        public IReadOnlyList<int> Cables { get; }
+        public IReadOnlyList<CableId> Cables { get; }
 
         /// <summary>Suma <see cref="Cable.Length"/> na trasie. Symulacja przelicza ją na jakość rozmowy.</summary>
         public float Length { get; }
 
-        public Call(int id, IReadOnlyList<int> nodes, IReadOnlyList<int> cables, float length)
+        public Call(CallId id, IReadOnlyList<NodeId> nodes, IReadOnlyList<CableId> cables, float length)
         {
             Id = id;
             Nodes = nodes;
@@ -31,6 +31,6 @@ namespace SpaghettiWires.Networking
             To = nodes[nodes.Count - 1];
         }
 
-        public override string ToString() => $"Call#{Id} ({From}->{To}, cables: {Cables.Count}, length: {Length})";
+        public override string ToString() => $"{Id} ({From}->{To}, cables: {Cables.Count}, length: {Length})";
     }
 }

@@ -64,7 +64,7 @@ namespace SpaghettiWires.Tests.Networking
             var a = _network.AddNode(NodeKind.Pole);
             var b = _network.AddNode(NodeKind.Pole);
 
-            Assert.Throws<ArgumentException>(() => _network.AddCable(a.Id, 999, 1, 1f));
+            Assert.Throws<ArgumentException>(() => _network.AddCable(a.Id, new NodeId(999), 1, 1f));
             Assert.Throws<ArgumentException>(() => _network.AddCable(a.Id, a.Id, 1, 1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => _network.AddCable(a.Id, b.Id, 0, 1f));
             Assert.Throws<ArgumentOutOfRangeException>(() => _network.AddCable(a.Id, b.Id, 1, -1f));
@@ -149,22 +149,22 @@ namespace SpaghettiWires.Tests.Networking
         [Test]
         public void GetOtherEnd_ReturnsOppositeNode()
         {
-            var cable = new Cable(1, 10, 20, 1, 1f);
+            var cable = new Cable(new CableId(1), new NodeId(10), new NodeId(20), 1, 1f);
 
-            Assert.AreEqual(20, cable.GetOtherEnd(10));
-            Assert.AreEqual(10, cable.GetOtherEnd(20));
-            Assert.Throws<ArgumentException>(() => cable.GetOtherEnd(30));
+            Assert.AreEqual(new NodeId(20), cable.GetOtherEnd(new NodeId(10)));
+            Assert.AreEqual(new NodeId(10), cable.GetOtherEnd(new NodeId(20)));
+            Assert.Throws<ArgumentException>(() => cable.GetOtherEnd(new NodeId(30)));
         }
 
         [Test]
         public void UnknownIds_Throw()
         {
-            Assert.Throws<KeyNotFoundException>(() => _network.GetNode(1));
-            Assert.Throws<KeyNotFoundException>(() => _network.GetCable(1));
-            Assert.Throws<KeyNotFoundException>(() => _network.GetCableIds(1));
-            Assert.Throws<KeyNotFoundException>(() => _network.RemoveNode(1));
-            Assert.IsFalse(_network.TryGetNode(1, out _));
-            Assert.IsFalse(_network.TryGetCable(1, out _));
+            Assert.Throws<KeyNotFoundException>(() => _network.GetNode(new NodeId(1)));
+            Assert.Throws<KeyNotFoundException>(() => _network.GetCable(new CableId(1)));
+            Assert.Throws<KeyNotFoundException>(() => _network.GetCableIds(new NodeId(1)));
+            Assert.Throws<KeyNotFoundException>(() => _network.RemoveNode(new NodeId(1)));
+            Assert.IsFalse(_network.TryGetNode(new NodeId(1), out _));
+            Assert.IsFalse(_network.TryGetCable(new CableId(1), out _));
         }
     }
 }
