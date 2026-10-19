@@ -73,10 +73,12 @@ namespace SpaghettiWires.Sandbox
                 return BuildCheck.Fail("Za daleko. Postaw słup po drodze.");
             if (!CanAttach(fromNodeId, pairs) || !CanAttach(toNodeId, pairs))
                 return BuildCheck.Fail("Słup jest pełny. Postaw kolejny słup.");
-            if (!views.IsCablePathClear(fromNodeId, toNodeId))
+            if (!views.IsCablePathClear(fromNodeId, toNodeId, NextCableId))
                 return BuildCheck.Fail("Kabel przecina budynek.");
             return BuildCheck.Ok;
         }
+
+        public int NextCableId => _nextCableId;
 
         public void LayCable(int fromNodeId, int toNodeId, int pairs)
         {

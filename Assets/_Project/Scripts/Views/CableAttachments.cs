@@ -69,13 +69,13 @@ namespace SpaghettiWires.Views
         }
 
         /// <summary>
-        /// Gdzie zaczepiłby się nowy kabel, bez rezerwowania miejsca: do podglądu przy przeciąganiu.
-        /// Na słupie pokazuje najbliższy wolny punkt, bo losowanie zależy od Id, którego kabel jeszcze nie ma.
+        /// Gdzie zaczepi się kabel o podanym Id, bez rezerwowania miejsca: do podglądu i sprawdzania przed położeniem.
+        /// Wybiera punkt tak samo jak <see cref="Attach"/>, więc przy niezmienionej zajętości to dokładnie ten sam punkt.
+        /// Gdy wolnych punktów nie ma, zwraca najbliższy (kabla i tak nie da się wtedy położyć).
         /// </summary>
-        public Vector3 PreviewPosition(Vector3 towards)
+        public Vector3 PreviewPosition(int cableId, Vector3 towards)
         {
-            EnsureInitialized();
-            int anchor = NearestFreeAnchor(towards);
+            int anchor = ChooseAnchor(cableId, towards);
             return _anchors[anchor >= 0 ? anchor : NearestAnchor(towards)].position;
         }
 

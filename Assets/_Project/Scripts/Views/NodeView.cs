@@ -27,8 +27,8 @@ namespace SpaghettiWires.Views
             name = $"{kind}#{id}";
         }
 
-        /// <summary>Gdzie zaczepiłby się nowy kabel prowadzony w stronę podanego punktu (podgląd przy przeciąganiu).</summary>
-        public Vector3 GetAnchorPosition(Vector3 towards) => Attachments.PreviewPosition(towards);
+        /// <summary>Gdzie zaczepi się kabel o podanym Id prowadzony w stronę podanego punktu (podgląd, sprawdzanie).</summary>
+        public Vector3 GetAnchorPosition(int cableId, Vector3 towards) => Attachments.PreviewPosition(cableId, towards);
 
         // Tint tworzony leniwie: widoki bywają tworzone też w trybie edycji, gdzie Awake się nie wywołuje.
         public void SetHighlight(Color color, float amount) => (_tint ??= new Tint(gameObject)).Apply(color, amount);

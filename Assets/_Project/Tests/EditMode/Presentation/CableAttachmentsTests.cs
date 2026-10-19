@@ -65,6 +65,17 @@ namespace SpaghettiWires.Tests
         }
 
         [Test]
+        public void Preview_ShowsTheAnchorThatAttachWillUse()
+        {
+            var pole = CreatePole();
+            for (int id = 1; id <= 8; id++)
+            {
+                var preview = pole.PreviewPosition(id, Vector3.zero);
+                Assert.AreEqual(preview, pole.Attach(id, 1, Vector3.zero), $"Cable #{id}");
+            }
+        }
+
+        [Test]
         public void Pole_AfterDetach_FreesAnchorForANewCable()
         {
             var pole = CreatePole();

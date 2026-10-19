@@ -51,14 +51,17 @@ namespace SpaghettiWires.Tools
                 : ToolContext.InvalidColor;
             _context.HighlightNode(target, color);
 
+            // Podgląd kończy się w punktach przyczepu, w których kabel faktycznie wyląduje.
+            int cableId = _context.Actions.NextCableId;
             if (target != null)
             {
-                Vector3 end = target.GetAnchorPosition(_from.transform.position);
-                _context.CablePreview.Show(_from.GetAnchorPosition(end), end, _pairs, color);
+                Vector3 start = _from.GetAnchorPosition(cableId, target.transform.position);
+                Vector3 end = target.GetAnchorPosition(cableId, _from.transform.position);
+                _context.CablePreview.Show(start, end, _pairs, color);
             }
             else if (pointer.HasGroundPoint)
             {
-                _context.CablePreview.Show(_from.GetAnchorPosition(pointer.GroundPoint), pointer.GroundPoint, _pairs, color);
+                _context.CablePreview.Show(_from.GetAnchorPosition(cableId, pointer.GroundPoint), pointer.GroundPoint, _pairs, color);
             }
 
             if (!_context.WasReleasedThisFrame)

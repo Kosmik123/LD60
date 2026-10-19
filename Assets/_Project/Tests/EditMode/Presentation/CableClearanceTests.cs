@@ -7,6 +7,8 @@ namespace SpaghettiWires.Tests
 {
     public class CableClearanceTests
     {
+        private const int CableId = 1;
+
         private readonly List<GameObject> _objects = new List<GameObject>();
 
         [TearDown]
@@ -48,7 +50,7 @@ namespace SpaghettiWires.Tests
         [Test]
         public void PoleToPole_OverOpenGround_IsClear()
         {
-            Assert.IsTrue(CableClearance.IsClear(Pole(Vector3.zero), Pole(new Vector3(12f, 0f, 0f))));
+            Assert.IsTrue(CableClearance.IsClear(Pole(Vector3.zero), Pole(new Vector3(12f, 0f, 0f)), CableId));
         }
 
         [Test]
@@ -60,7 +62,7 @@ namespace SpaghettiWires.Tests
             // Dom wyższy niż kabel na tej wysokości: zwis sprowadza kabel do ok. 6,2 m.
             var tower = Node(NodeVisualKind.House, new Vector3(6f, 0f, 0f), Vector3.up * 10f, new Vector3(3.2f, 10f, 3.2f));
 
-            Assert.IsFalse(CableClearance.IsClear(a, b));
+            Assert.IsFalse(CableClearance.IsClear(a, b, CableId));
             Assert.IsNotNull(tower);
         }
 
@@ -69,7 +71,7 @@ namespace SpaghettiWires.Tests
         {
             var house = House(Vector3.zero, wall: Vector3.right);
 
-            Assert.IsTrue(CableClearance.IsClear(house, Pole(new Vector3(8f, 0f, 0f))));
+            Assert.IsTrue(CableClearance.IsClear(house, Pole(new Vector3(8f, 0f, 0f)), CableId));
         }
 
         [Test]
@@ -77,7 +79,7 @@ namespace SpaghettiWires.Tests
         {
             var house = House(Vector3.zero, wall: Vector3.left);
 
-            Assert.IsFalse(CableClearance.IsClear(house, Pole(new Vector3(8f, 0f, 0f))));
+            Assert.IsFalse(CableClearance.IsClear(house, Pole(new Vector3(8f, 0f, 0f)), CableId));
         }
 
         [Test]
@@ -87,7 +89,7 @@ namespace SpaghettiWires.Tests
             var b = Pole(new Vector3(12f, 0f, 0f));
             Node(NodeVisualKind.Pole, new Vector3(6f, 0f, 0f), Vector3.up * 10f, new Vector3(0.8f, 10f, 0.8f));
 
-            Assert.IsTrue(CableClearance.IsClear(a, b));
+            Assert.IsTrue(CableClearance.IsClear(a, b, CableId));
         }
     }
 }

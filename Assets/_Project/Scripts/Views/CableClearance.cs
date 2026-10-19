@@ -16,10 +16,11 @@ namespace SpaghettiWires.Views
         private static readonly List<Vector3> Points = new List<Vector3>();
         private static readonly RaycastHit[] Hits = new RaycastHit[16];
 
-        public static bool IsClear(NodeView from, NodeView to, float sagPerMeter = CableCurve.DefaultSagPerMeter)
+        /// <param name="cableId">Id, które dostanie kabel. Od niego zależy punkt przyczepu na słupie.</param>
+        public static bool IsClear(NodeView from, NodeView to, int cableId, float sagPerMeter = CableCurve.DefaultSagPerMeter)
         {
-            Vector3 a = from.GetAnchorPosition(to.transform.position);
-            Vector3 b = to.GetAnchorPosition(from.transform.position);
+            Vector3 a = from.GetAnchorPosition(cableId, to.transform.position);
+            Vector3 b = to.GetAnchorPosition(cableId, from.transform.position);
             CableCurve.Sample(a, b, CableCurve.SagForSpan(a, b, sagPerMeter), Segments, Points);
 
             for (int i = 0; i + 1 < Points.Count; i++)

@@ -75,8 +75,8 @@ namespace SpaghettiWires.Views
         public bool TryGetNode(int id, out NodeView view) => _nodes.TryGetValue(id, out view);
 
         /// <summary>Czy kabel między węzłami nie przeszedłby przez żaden budynek (<see cref="CableClearance"/>).</summary>
-        public bool IsCablePathClear(int fromNodeId, int toNodeId) =>
-            CableClearance.IsClear(_nodes[fromNodeId], _nodes[toNodeId]);
+        public bool IsCablePathClear(int fromNodeId, int toNodeId, int cableId) =>
+            CableClearance.IsClear(_nodes[fromNodeId], _nodes[toNodeId], cableId);
         public bool TryGetCable(int id, out CableView view) => _cables.TryGetValue(id, out view);
 
         private NodeView GetPrefab(NodeVisualKind kind) => kind switch
