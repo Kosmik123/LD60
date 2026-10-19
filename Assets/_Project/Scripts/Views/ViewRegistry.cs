@@ -31,7 +31,7 @@ namespace SpaghettiWires.Views
 
         public NodeView SpawnNode(int id, NodeVisualKind kind, Vector2Int cell)
         {
-            var view = Instantiate(GetPrefab(kind), grid.Grid.CellToWorld(cell), Quaternion.identity, GetRoot(ref _nodesRoot, "Nodes"));
+            var view = Instantiate(GetPrefab(kind), grid.Grid.CellToWorld(cell), GetRotation(id, kind), GetRoot(ref _nodesRoot, "Nodes"));
             view.Initialize(id, kind, cell);
             _nodes.Add(id, view);
             return view;
@@ -59,8 +59,18 @@ namespace SpaghettiWires.Views
         public void RemoveCable(int id)
         {
             if (_cables.Remove(id, out var view))
+            {
+                view.Detach();
                 Destroy(view.gameObject);
+            }
         }
+
+        // Domy obrócone losowo o wielokrotność 90°, żeby punkt przyczepu na ścianie wypadał z różnych stron.
+        // Losowanie zależy od Id, więc dom zawsze stoi tak samo.
+        private static Quaternion GetRotation(int id, NodeVisualKind kind) =>
+            kind == NodeVisualKind.House
+                ? Quaternion.Euler(0f, 90f * new System.Random(id).Next(4), 0f)
+                : Quaternion.identity;
 
         public bool TryGetNode(int id, out NodeView view) => _nodes.TryGetValue(id, out view);
         public bool TryGetCable(int id, out CableView view) => _cables.TryGetValue(id, out view);

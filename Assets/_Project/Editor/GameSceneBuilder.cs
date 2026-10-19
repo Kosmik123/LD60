@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using SpaghettiWires.CameraControl;
 using SpaghettiWires.Map;
 using SpaghettiWires.Sandbox;
@@ -31,13 +32,22 @@ namespace SpaghettiWires.EditorTools
         private const float CellSize = 4f;
         private static readonly Vector2Int GridSize = new Vector2Int(25, 25);
 
-        [MenuItem("Tools/Spaghetti Wires/Zbuduj scenę gry")]
-        public static void Build()
+        /// <summary>Przebudowuje tylko modele węzłów (dom, słup, centrala). Scena odwołuje się do nich, więc zmiany widać od razu.</summary>
+        [MenuItem("Tools/Spaghetti Wires/Zbuduj modele węzłów")]
+        public static void BuildNodePrefabs()
         {
             var materials = new Materials();
             BuildHousePrefab(materials);
             WoodenPoleBuilder.Build();
             BuildExchangePrefab(materials);
+            AssetDatabase.SaveAssets();
+        }
+
+        [MenuItem("Tools/Spaghetti Wires/Zbuduj scenę gry")]
+        public static void Build()
+        {
+            BuildNodePrefabs();
+            var materials = new Materials();
             var panelSettings = BuildPanelSettings();
             AssetDatabase.SaveAssets();
 
@@ -126,25 +136,29 @@ namespace SpaghettiWires.EditorTools
         }
 
         /// <summary>
-        /// Do uruchamiania z wiersza poleceń: buduje scenę, układa przykładową sieć w trybie edycji
-        /// (bez zapisu) i renderuje podgląd z kamery do pliku podanego w „-previewPath”.
+        /// Do uruchamiania z wiersza poleceń: przebudowuje modele węzłów, otwiera scenę gry, układa przykładową sieć
+        /// w trybie edycji (bez zapisu sceny) i renderuje podgląd ogólny oraz zbliżenie na słup
+        /// do plików „{-previewPath}_overview.png” i „{-previewPath}_closeup.png”.
         /// </summary>
         public static void BuildAndRenderPreview()
         {
-            Build();
+            BuildNodePrefabs();
+            EditorSceneManager.OpenScene(ScenePath);
 
             var sandbox = Object.FindAnyObjectByType<SandboxBuildActions>();
             var views = Object.FindAnyObjectByType<ViewRegistry>();
             var grid = Object.FindAnyObjectByType<MapGridBehaviour>();
             sandbox.SpawnStartHouses();
 
-            // Słup na środku i kable do wszystkich domów w zasięgu.
+            // Słup na środku, magistrala do drugiego słupa i kable do domów w zasięgu, aż słup się zapełni.
             var center = grid.Grid.Size / 2;
             sandbox.PlacePole(center);
             int poleId = views.Nodes.Count;
-            foreach (var node in views.Nodes)
+            sandbox.PlacePole(center + new Vector2Int(-2, 1));
+            sandbox.LayCable(poleId, poleId + 1, 4);
+            foreach (var node in views.Nodes.ToArray())
             {
-                if (node.Id != poleId && sandbox.CheckCable(poleId, node.Id, 1).IsValid)
+                if (node.Kind == NodeVisualKind.House && sandbox.CheckCable(poleId, node.Id, 1).IsValid)
                     sandbox.LayCable(poleId, node.Id, 1);
             }
 
@@ -153,8 +167,15 @@ namespace SpaghettiWires.EditorTools
             overlay.Visible = true;
             Object.FindAnyObjectByType<CellHighlight>().Show(center + new Vector2Int(2, -2), ToolContext.ValidColor);
 
-            string path = GetCommandLineArg("-previewPath") ?? "Temp/GamePreview.png";
-            Render(Camera.main, path);
+            string prefix = GetCommandLineArg("-previewPath") ?? "Temp/GamePreview";
+            var camera = Camera.main;
+            Render(camera, $"{prefix}_overview.png");
+
+            views.TryGetNode(poleId, out var pole);
+            var focus = pole.transform.position + Vector3.up * 5f;
+            var rotation = Quaternion.Euler(25f, 30f, 0f);
+            camera.transform.SetPositionAndRotation(focus - rotation * Vector3.forward * 12f, rotation);
+            Render(camera, $"{prefix}_closeup.png");
         }
 
         #region Scene objects
@@ -213,10 +234,8 @@ namespace SpaghettiWires.EditorTools
             CreatePrimitive(PrimitiveType.Cube, "Body", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(width, height, width), materials.Wall);
             CreatePrimitive(PrimitiveType.Cube, "Roof", root.transform, new Vector3(0f, height + roof / 2f, 0f), new Vector3(width + 0.2f, roof, width + 0.2f), materials.Roof);
 
-            // Kable przyczepione na środku każdej krawędzi dachu.
-            float edge = width / 2f, anchorHeight = height + roof;
-            AddAnchors(root, new Vector3(edge, anchorHeight, 0f), new Vector3(-edge, anchorHeight, 0f),
-                new Vector3(0f, anchorHeight, edge), new Vector3(0f, anchorHeight, -edge));
+            // Wszystkie kable domu przychodzą do jednego uchwytu na ścianie (dom jest losowo obracany przy stawianiu).
+            AddWallAnchor(root, new Vector3(0f, height - 0.4f, width / 2f), Vector3.forward, materials.Roof);
 
             var collider = root.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, (height + roof) / 2f, 0f);
@@ -231,9 +250,13 @@ namespace SpaghettiWires.EditorTools
             CreatePrimitive(PrimitiveType.Cube, "Body", root.transform, new Vector3(0f, height / 2f, 0f), new Vector3(width, height, width), materials.Exchange);
             CreatePrimitive(PrimitiveType.Cylinder, "Mast", root.transform, new Vector3(0f, height + 1.5f, 0f), new Vector3(0.15f, 1.5f, 0.15f), materials.Roof);
 
-            float edge = width / 2f;
-            AddAnchors(root, new Vector3(edge, height, 0f), new Vector3(-edge, height, 0f),
-                new Vector3(0f, height, edge), new Vector3(0f, height, -edge));
+            // Po trzy uchwyty na każdej ścianie, bez limitu kabli. Kabel bierze najbliższy.
+            foreach (var side in new[] { Vector3.forward, Vector3.back, Vector3.left, Vector3.right })
+            {
+                var along = Vector3.Cross(Vector3.up, side);
+                foreach (float offset in new[] { -1.1f, 0f, 1.1f })
+                    AddWallAnchor(root, side * (width / 2f) + along * offset + Vector3.up * (height - 0.6f), side, materials.Roof);
+            }
 
             var collider = root.AddComponent<BoxCollider>();
             collider.center = new Vector3(0f, height / 2f, 0f);
@@ -241,14 +264,20 @@ namespace SpaghettiWires.EditorTools
             SaveNodePrefab(root, "Exchange");
         }
 
-        private static void AddAnchors(GameObject root, params Vector3[] positions)
+        /// <summary>Uchwyt kabla wystający ze ściany i punkt przyczepu na jego końcu.</summary>
+        private static void AddWallAnchor(GameObject root, Vector3 wallPoint, Vector3 outward, Material material)
         {
-            for (int i = 0; i < positions.Length; i++)
-            {
-                var anchor = new GameObject($"CableAnchor_{i}");
-                anchor.transform.SetParent(root.transform, false);
-                anchor.transform.localPosition = positions[i];
-            }
+            const float length = 0.16f, size = 0.08f;
+            int index = root.transform.childCount;
+
+            var bracket = CreatePrimitive(PrimitiveType.Cube, $"CableBracket_{index}", root.transform,
+                wallPoint + outward * (length / 2f), Vector3.one * size, material);
+            bracket.transform.localRotation = Quaternion.LookRotation(outward);
+            bracket.transform.localScale = new Vector3(size, size, length);
+
+            var anchor = new GameObject($"CableAnchor_{index}");
+            anchor.transform.SetParent(root.transform, false);
+            anchor.transform.localPosition = wallPoint + outward * length;
         }
 
         private static void SaveNodePrefab(GameObject root, string name)

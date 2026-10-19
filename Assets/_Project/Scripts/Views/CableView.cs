@@ -44,17 +44,28 @@ namespace SpaghettiWires.Views
             var random = new System.Random(id);
             _sagScale = 1f + ((float)random.NextDouble() * 2f - 1f) * sagVariation;
 
+            // Kabel rezerwuje punkt przyczepu na obu końcach i trzyma go aż do odczepienia.
+            from.Attachments.Attach(id, pairs, to.transform.position);
+            to.Attachments.Attach(id, pairs, from.transform.position);
+
             EnsureLine();
             _line.widthMultiplier = widthPerSqrtPair * Mathf.Sqrt(pairs);
             ClearHighlight();
             Refresh();
         }
 
+        /// <summary>Zwalnia punkty przyczepu na obu końcach. Wołane przed usunięciem kabla.</summary>
+        public void Detach()
+        {
+            From.Attachments.Detach(Id);
+            To.Attachments.Detach(Id);
+        }
+
         /// <summary>Przelicza kształt kabla, np. gdy przesunął się któryś z węzłów.</summary>
         public void Refresh()
         {
-            Vector3 a = From.GetAnchorPosition(To.transform.position);
-            Vector3 b = To.GetAnchorPosition(From.transform.position);
+            Vector3 a = From.Attachments.GetAnchorPosition(Id);
+            Vector3 b = To.Attachments.GetAnchorPosition(Id);
             float sag = CableCurve.SagForSpan(a, b, sagPerMeter) * _sagScale;
             CableCurve.Sample(a, b, sag, Segments, _points);
 
