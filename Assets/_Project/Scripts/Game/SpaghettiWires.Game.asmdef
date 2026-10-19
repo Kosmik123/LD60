@@ -1,0 +1,21 @@
+{
+    "name": "SpaghettiWires.Game",
+    "rootNamespace": "SpaghettiWires.Game",
+    "references": [
+        "SpaghettiWires.Simulation",
+        "SpaghettiWires.UI",
+        "SpaghettiWires.Tools",
+        "SpaghettiWires.Views",
+        "SpaghettiWires.Map",
+        "Bipolar.InterfaceSerialization"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

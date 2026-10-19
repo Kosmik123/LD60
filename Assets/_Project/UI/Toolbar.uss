@@ -53,3 +53,12 @@
     font-size: 12px;
     -unity-font-style: bold;
 }
+
+.tool-hint {
+    margin-bottom: 6px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    background-color: rgba(20, 20, 24, 0.85);
+    color: rgb(255, 220, 120);
+    font-size: 14px;
+}

@@ -33,6 +33,12 @@ namespace SpaghettiWires.Tools
         void PlacePole(Vector2Int cell);
 
         BuildCheck CheckCable(int fromNodeId, int toNodeId, int pairs);
+
+        /// <summary>
+        /// Najdłuższy odcinek kabla o danej liczbie żył, w metrach w poziomie (bez zwisu).
+        /// Podgląd używa go, gdy kabel jeszcze nie celuje w węzeł.
+        /// </summary>
+        float GetMaxCableLength(int pairs);
         void LayCable(int fromNodeId, int toNodeId, int pairs);
 
         /// <summary>

@@ -6,6 +6,7 @@ namespace SpaghettiWires.Tools
     /// <summary>
     /// Kładzenie kabla lub magistrali: wciśnij na węźle, przeciągnij i puść na drugim węźle.
     /// Podgląd jest zielony, gdy kabel da się położyć, i czerwony, gdy nie.
+    /// Zanim kabel wyceluje w węzeł, jest czerwony, gdy jest za długi albo gracza na niego nie stać.
     /// </summary>
     public sealed class CableTool : ITool
     {
@@ -46,22 +47,36 @@ namespace SpaghettiWires.Tools
             var target = pointer.HoveredNode != _from ? pointer.HoveredNode : null;
             var check = target != null ? _context.Actions.CheckCable(_from.Id, target.Id, _pairs) : default;
 
-            Color color = target == null ? ToolContext.NeutralColor
-                : check.IsValid ? ToolContext.ValidColor
-                : ToolContext.InvalidColor;
-            _context.HighlightNode(target, color);
-
             // Podgląd kończy się w punktach przyczepu, w których kabel faktycznie wyląduje.
             int cableId = _context.Actions.NextCableId;
             if (target != null)
             {
+                Color color = check.IsValid ? ToolContext.ValidColor : ToolContext.InvalidColor;
+                _context.HighlightNode(target, color);
+
                 Vector3 start = _from.GetAnchorPosition(cableId, target.transform.position);
                 Vector3 end = target.GetAnchorPosition(cableId, _from.transform.position);
                 _context.CablePreview.Show(start, end, _pairs, color);
+                ShowPrice(GetPrice(GetLength(target.transform.position)), (start + end) / 2f);
             }
             else if (pointer.HasGroundPoint)
             {
-                _context.CablePreview.Show(_from.GetAnchorPosition(cableId, pointer.GroundPoint), pointer.GroundPoint, _pairs, color);
+                _context.HighlightNode(null, default);
+
+                float length = GetLength(pointer.GroundPoint);
+                int? price = GetPrice(length);
+                bool tooLong = length > _context.Actions.GetMaxCableLength(_pairs);
+                bool tooExpensive = price.HasValue && !_context.Pricing.CanAfford(price.Value);
+                Color color = tooLong || tooExpensive ? ToolContext.InvalidColor : ToolContext.NeutralColor;
+
+                Vector3 start = _from.GetAnchorPosition(cableId, pointer.GroundPoint);
+                _context.CablePreview.Show(start, pointer.GroundPoint, _pairs, color);
+                ShowPrice(price, (start + pointer.GroundPoint) / 2f);
+            }
+            else
+            {
+                _context.HighlightNode(null, default);
+                _context.HidePrice();
             }
 
             if (!_context.WasReleasedThisFrame)
@@ -77,10 +92,33 @@ namespace SpaghettiWires.Tools
             Cancel();
         }
 
+        /// <summary>
+        /// Długość kabla do punktu: odległość w poziomie od węzła startowego,
+        /// tak samo jak przy zakupie, czyli bez zwisu.
+        /// </summary>
+        private float GetLength(Vector3 end)
+        {
+            Vector3 offset = end - _from.transform.position;
+            return new Vector2(offset.x, offset.z).magnitude;
+        }
+
+        /// <summary>Cena kabla o danej długości. Null, gdy budowa nie jest płatna.</summary>
+        private int? GetPrice(float length) => _context.Pricing?.GetCablePrice(length, _pairs);
+
+        /// <summary>Cena nad środkiem podglądu.</summary>
+        private void ShowPrice(int? price, Vector3 labelPosition)
+        {
+            if (price.HasValue)
+                _context.ShowPrice(labelPosition, price.Value);
+            else
+                _context.HidePrice();
+        }
+
         public void Cancel()
         {
             _from = null;
             _context.CablePreview.Hide();
+            _context.HidePrice();
             _context.HighlightNode(null, default);
         }
 

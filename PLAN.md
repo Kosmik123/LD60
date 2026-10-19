@@ -8,8 +8,12 @@ Kolejność prac nad grą na podstawie [GDD.md](GDD.md) i [TECH.md](TECH.md). Pl
 
 - ✅ GDD i TECH (`develop`)
 - ✅ Kamera izometryczna `IsometricCameraController` (`develop`)
-- ✅ Model drewnianego słupa (gałąź `WoodenPole`)
+- ✅ Model drewnianego słupa, używany jako słup w scenie gry
 - ✅ Rdzeń sieci (etap 1), przepisany na model z TECH
+- ✅ Scena gry, widoki i narzędzia (etapy 3–4), na razie na tymczasowym `SandboxBuildActions`, **bez połączenia z rdzeniem sieci**
+- ✅ UI: pasek narzędzi, HUD, okienko zajętości słupa, ekran przegranej
+- ✅ Ekonomia: pieniądze, reputacja, przegrana i płacenie za budowę (część etapu 6)
+- ⚠️ Następny ważny krok: reguły budowy (etap 2) na `PhoneNetwork` zamiast sandboxa, potem symulacja rozmów (etap 5)
 - ✅ TECH zawiera √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę
 
 ---
@@ -46,9 +50,7 @@ Równolegle od etapu 3: modele, dźwięk, UI
 - [x] Uzupełnić TECH o √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę.
 - [x] Ustalić **skalę**: rozmiar pola siatki w metrach i wielkość domu względem słupa. Pole 4 m, dom zajmuje 1 pole (TECH 1).
 - [x] Ustalić strukturę folderów i assembly: `Networking`, `Building` (reguły), `Simulation`, `Views`, `Input`, `UI` (TECH 1).
-- [ ] Zdecydować, co z gałęziami `Network` (do przepisania) i `WoodenPole` (do włączenia).
-  - `Network`: przepisany i włączony do `develop`.
-  - `WoodenPole`: gałęzi nie ma na zdalnym repozytorium, trzeba ją wypchnąć.
+- [x] Zdecydować, co z gałęziami `Network` (do przepisania) i `WoodenPole` (do włączenia). Obie włączone do `develop`.
 
 ### 1. Rdzeń sieci: czysty C#, testy EditMode (ok. 4–6 h)
 Fundament wszystkiego, więc warto zrobić go porządnie z testami.
@@ -67,24 +69,27 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 ### 2. Reguły budowy (ok. 2–3 h)
 - [ ] Mapa: `NodeId → pole siatki` oraz klasa słupa.
 - [ ] Walidacja: zasięg kabla, miejsca na słupie (√ liczby żył), pieniądze.
+  - Tymczasowo: zasięg, miejsca i kolizje z budynkami w `SandboxBuildActions`, pieniądze w `PaidBuildActions`. Reguły mają zastąpić sandbox i korzystać z `PhoneNetwork`.
 - [ ] Podgląd walidacji bez zmiany stanu (do czerwonego lub zielonego kabla).
 - [ ] Wszystkie liczby w jednym `ScriptableObject` z ustawieniami gry.
 
 ### 3. Scena i widoki (ok. 4–5 h)
-- [ ] Podłoże z niewidoczną siatką i scena gry z kamerą.
-- [ ] `NodeView`: dom (na razie prosty sześcian), słup (prefab `WoodenPole`), centrala.
-- [ ] `CableView`: kabel ze zwisem (krzywa łańcuchowa) od punktu zaczepienia do punktu zaczepienia.
+- [x] Podłoże z niewidoczną siatką i scena gry z kamerą.
+- [x] `NodeView`: dom (na razie prosty sześcian), słup (prefab `WoodenPole`), centrala.
+- [x] `CableView`: kabel ze zwisem (krzywa łańcuchowa) od punktu zaczepienia do punktu zaczepienia.
 - [ ] Tworzenie i usuwanie widoków w reakcji na zdarzenia sieci, słownik `Id → widok`.
+  - Słownik `Id → widok` jest (`ViewRegistry`), ale widoki tworzy sandbox, a nie zdarzenia `PhoneNetwork`.
 
 ### 4. Input i narzędzia (ok. 4–5 h)
 - [x] Pasek narzędzi i klawisze 1–5 (`ToolbarView`, `ToolController`).
-- [ ] **Słup:** stawianie na wolnym polu.
-- [ ] **Kabel:** przeciągnij od węzła do węzła, z podglądem i kolorem poprawności.
-- [ ] **Nożyce:** usuń kabel. **Miernik:** pokaż sprawne żyły.
-- [ ] Wybieranie obiektów myszą (raycast → `Id`) i podświetlanie pod kursorem.
+- [x] **Słup:** stawianie na wolnym polu.
+- [x] **Kabel:** przeciągnij od węzła do węzła, z podglądem i kolorem poprawności.
+- [x] **Nożyce:** usuń kabel. **Miernik:** pokaż sprawne żyły (na razie z sandboxa, bez awarii).
+- [x] Wybieranie obiektów myszą (raycast → `Id`) i podświetlanie pod kursorem (`ScenePointer`).
 - [x] Okienko nad słupem z zajętością miejsc, np. `7/12` (`PoleTooltipView`). Dane na razie z sandboxa przez `IBuildActions.TryGetSlotUsage`.
 
 > **Kamień milowy A:** można stawiać słupy i łączyć domy kablami. Nic jeszcze nie dzwoni.
+> Osiągnięty na sandboxie. Do pełnego zaliczenia brakuje podpięcia pod `PhoneNetwork` (etap 2 i ostatni punkt etapu 3).
 
 ### 5. Symulacja rozmów (ok. 4 h)
 - [ ] Generator rozmów: kto do kogo dzwoni i jak często (rośnie z czasem).
@@ -92,12 +97,18 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 - [ ] **Widoczność:** świecące kable trwającej rozmowy, ikonka „zajęte” nad domem.
 
 ### 6. Ekonomia i zadowolenie (ok. 3 h)
+- [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
 - [ ] Pieniądze za udane rozmowy, koszty budowy.
+  - [x] Koszty budowy: słup za stałą cenę, kabel i magistrala od długości (`BuildPrices`, `PaidBuildActions`).
+  - [x] Ceny widoczne przed zakupem: cennik przy pasku narzędzi i cena nad podglądem kabla (`CablePriceView`).
+  - [ ] Pieniądze za udane rozmowy.
 - [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
-- [ ] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
-  - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`). Brakuje wykrywania przegranej.
-- [ ] HUD: pieniądze, reputacja, czas.
-  - [x] Widok HUD: pieniądze i reputacja w lewym górnym rogu, czas w prawym (`HudView.SetMoney`, `SetReputation`, `SetTime`). Brakuje podpięcia ekonomii i zegara gry.
+- [x] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
+  - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`).
+  - [x] Wykrywanie przegranej w `Economy` i pokazanie ekranu przez `GameSession`.
+- [x] HUD: pieniądze, reputacja, czas.
+  - [x] Widok HUD: pieniądze i reputacja w lewym górnym rogu, czas w prawym (`HudView.SetMoney`, `SetReputation`, `SetTime`).
+  - [x] Podpięcie ekonomii i zegara gry (`GameSession`).
 
 > **Kamień milowy B:** grywalna pętla. Budujesz, ludzie dzwonią, zarabiasz albo przegrywasz. **Od tego momentu warto testować na innych osobach.**
 

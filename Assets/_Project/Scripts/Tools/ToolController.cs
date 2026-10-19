@@ -38,6 +38,15 @@ namespace SpaghettiWires.Tools
         /// <summary>Pokazuje komunikat w linii komunikatów nad paskiem narzędzi.</summary>
         public void PostMessage(string message) => MessagePosted?.Invoke(message);
 
+        /// <summary>Liczba żył magistrali kładzionej narzędziem Magistrala.</summary>
+        public int TrunkPairs => trunkPairs;
+
+        /// <summary>Ceny budowy, jeśli akcje gry są płatne. Null = bez cen.</summary>
+        public IBuildPricing Pricing => buildActions.Value as IBuildPricing;
+
+        /// <summary>Cena nad podglądem kabla w tej klatce.</summary>
+        public PricePreview PricePreview => _context?.PricePreview ?? default;
+
         public IBuildActions BuildActions
         {
             get => buildActions.Value;
