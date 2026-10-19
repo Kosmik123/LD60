@@ -4,13 +4,12 @@ using System.Collections.Generic;
 namespace SpaghettiWires.Network
 {
     /// <summary>
-    /// Szukanie najkrótszej trasy po kablach (algorytm Dijkstry, TECH 4.3).
-    /// Sieć nie zna długości kabli, żył ani zajętości, więc waga kabla i to,
-    /// które kable i węzły są dostępne, przychodzą z zewnątrz.
+    /// Szukanie najkrótszej trasy po kablach (algorytm Dijkstry, TECH 4.3), czyli o najmniejszej
+    /// sumie <see cref="Cable.Length"/>. Sieć nie zna żył ani zajętości, więc to,
+    /// które kable i węzły są dostępne, przychodzi z zewnątrz.
     /// </summary>
     public static class CablePathfinder
     {
-        /// <param name="cableWeight">Waga kabla (np. długość z mapy), nieujemna. Brak = 1, czyli najmniej kabli.</param>
         /// <param name="canUseCable">Czy rozmowa może iść tym kablem (np. ma wolną żyłę). Brak = każdy.</param>
         /// <param name="canUseNode">
         /// Czy trasa może zawierać ten węzeł (np. dom nie jest zajęty).
@@ -21,7 +20,6 @@ namespace SpaghettiWires.Network
             int fromNodeId,
             int toNodeId,
             out NetworkPath path,
-            Func<Cable, float> cableWeight = null,
             Func<Cable, bool> canUseCable = null,
             Func<Node, bool> canUseNode = null)
         {
@@ -59,11 +57,7 @@ namespace SpaghettiWires.Network
                     if (canUseNode != null && !canUseNode(network.GetNode(next)))
                         continue;
 
-                    float weight = cableWeight != null ? cableWeight(cable) : 1f;
-                    if (float.IsNaN(weight) || weight < 0f)
-                        throw new InvalidOperationException($"Invalid weight {weight} for {cable}.");
-
-                    float distance = distances[current] + weight;
+                    float distance = distances[current] + cable.Length;
                     if (!distances.TryGetValue(next, out float known))
                         open.Add(next);
                     else if (distance >= known)

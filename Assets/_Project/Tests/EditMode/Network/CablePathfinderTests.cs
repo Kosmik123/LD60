@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using SpaghettiWires.Network;
@@ -8,25 +7,19 @@ namespace SpaghettiWires.Tests.Network
     public class CablePathfinderTests
     {
         private CableNetwork _network;
-        private Dictionary<int, float> _lengths;
 
         [SetUp]
         public void SetUp()
         {
             _network = new CableNetwork();
-            _lengths = new Dictionary<int, float>();
         }
 
         private int Node(NodeKind kind = NodeKind.Pole) => _network.AddNode(kind).Id;
 
         private int Cable(int a, int b, float length = 1f)
         {
-            var cable = _network.AddCable(a, b, 1);
-            _lengths[cable.Id] = length;
-            return cable.Id;
+            return _network.AddCable(a, b, 1, length).Id;
         }
-
-        private float Length(Cable cable) => _lengths[cable.Id];
 
         [Test]
         public void FindsPathThroughChain()
@@ -34,7 +27,7 @@ namespace SpaghettiWires.Tests.Network
             int a = Node(), b = Node(), c = Node();
             int ab = Cable(a, b, 2f), bc = Cable(b, c, 3f);
 
-            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, c, out var path, Length));
+            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, c, out var path));
 
             CollectionAssert.AreEqual(new[] { a, b, c }, path.Nodes);
             CollectionAssert.AreEqual(new[] { ab, bc }, path.Cables);
@@ -60,24 +53,24 @@ namespace SpaghettiWires.Tests.Network
             Cable(a, c, 10f);
             int ab = Cable(a, b, 2f), bc = Cable(b, c, 3f);
 
-            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, c, out var path, Length));
+            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, c, out var path));
 
             CollectionAssert.AreEqual(new[] { ab, bc }, path.Cables);
             Assert.AreEqual(5f, path.Length);
         }
 
         [Test]
-        public void WithoutWeights_PrefersFewestCables()
+        public void PrefersFewerLongerCablesWhenTotalIsShorter()
         {
             int a = Node(), b = Node(), c = Node();
-            int ac = Cable(a, c, 10f);
-            Cable(a, b, 2f);
+            int ac = Cable(a, c, 4f);
+            Cable(a, b, 3f);
             Cable(b, c, 3f);
 
             Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, c, out var path));
 
             CollectionAssert.AreEqual(new[] { ac }, path.Cables);
-            Assert.AreEqual(1f, path.Length);
+            Assert.AreEqual(4f, path.Length);
         }
 
         [Test]
@@ -87,7 +80,7 @@ namespace SpaghettiWires.Tests.Network
             Cable(a, b, 4f);
             int light = Cable(a, b, 1f);
 
-            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, b, out var path, Length));
+            Assert.IsTrue(CablePathfinder.TryFindPath(_network, a, b, out var path));
 
             CollectionAssert.AreEqual(new[] { light }, path.Cables);
         }
@@ -120,7 +113,7 @@ namespace SpaghettiWires.Tests.Network
             int ab = Cable(a, b, 5f), bc = Cable(b, c, 5f);
 
             Assert.IsTrue(CablePathfinder.TryFindPath(
-                _network, a, c, out var path, Length, canUseCable: cable => cable.Id != blocked));
+                _network, a, c, out var path, canUseCable: cable => cable.Id != blocked));
 
             CollectionAssert.AreEqual(new[] { ab, bc }, path.Cables);
         }
@@ -135,7 +128,7 @@ namespace SpaghettiWires.Tests.Network
             Cable(pole, c, 5f);
 
             Assert.IsTrue(CablePathfinder.TryFindPath(
-                _network, a, c, out var path, Length, canUseNode: node => node.Id != busyHouse));
+                _network, a, c, out var path, canUseNode: node => node.Id != busyHouse));
 
             CollectionAssert.AreEqual(new[] { a, pole, c }, path.Nodes);
         }
@@ -163,14 +156,11 @@ namespace SpaghettiWires.Tests.Network
         }
 
         [Test]
-        public void InvalidInput_Throws()
+        public void UnknownNode_Throws()
         {
-            int a = Node(), b = Node();
-            Cable(a, b);
+            int a = Node();
 
             Assert.Throws<KeyNotFoundException>(() => CablePathfinder.TryFindPath(_network, a, 999, out _));
-            Assert.Throws<InvalidOperationException>(
-                () => CablePathfinder.TryFindPath(_network, a, b, out _, cableWeight: _ => -1f));
         }
     }
 }
