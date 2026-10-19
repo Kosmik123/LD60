@@ -14,7 +14,8 @@ Kolejność prac nad grą na podstawie [GDD.md](GDD.md) i [TECH.md](TECH.md). Pl
 - ✅ Symulacja rozmów z widocznymi rozmowami (etap 5)
 - ✅ UI: pasek narzędzi, HUD, okienko zajętości słupa, ekran przegranej
 - ✅ Ekonomia: pieniądze, reputacja, przegrana i płacenie za budowę (część etapu 6)
-- ⚠️ Następny ważny krok: podpiąć wyniki rozmów do ekonomii (etap 6), co zamyka kamień B. Potem reguły budowy zamiast sandboxa (etap 2)
+- ✅ Wyniki rozmów podpięte do ekonomii (etap 6): kamień B w kodzie zamknięty, do sprawdzenia w Unity i do balansu
+- ⚠️ Następne kroki: sprawdzenie w Unity, balans liczb, build WebGL, potem reguły budowy zamiast sandboxa (etap 2) i awarie (etap 7)
 - ✅ TECH zawiera √(liczba żył) miejsc na słupie i dom przenoszący jedną rozmowę
 
 ---
@@ -100,11 +101,12 @@ Fundament wszystkiego, więc warto zrobić go porządnie z testami.
 
 ### 6. Ekonomia i zadowolenie (ok. 3 h)
 - [x] Model pieniędzy i reputacji z wykrywaniem przegranej (`Economy` w `Scripts/Simulation/`).
-- [ ] Pieniądze za udane rozmowy, koszty budowy.
+- [x] Pieniądze za udane rozmowy, koszty budowy.
   - [x] Koszty budowy: słup za stałą cenę, kabel i magistrala od długości (`BuildPrices`, `PaidBuildActions`).
   - [x] Ceny widoczne przed zakupem: cennik przy pasku narzędzi i cena nad podglądem kabla (`CablePriceView`).
-  - [ ] Pieniądze za udane rozmowy.
-- [ ] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy.
+  - [x] Pieniądze za udane rozmowy (`CallPayouts`, na scenie `CallEconomyLink`). Płatne po normalnym zakończeniu, zerwana rozmowa nic nie daje.
+- [x] Zadowolenie i reputacja: kary za „zajęte” i zerwane rozmowy. Osobna wartość dla braku trasy, zajętego odbiorcy, zajętego dzwoniącego i zerwania, mały plus za udaną rozmowę (`CallPayoutSettings`).
+- [x] Po przegranej symulacja rozmów staje razem z zegarem gry.
 - [x] Przegrana (reputacja albo pieniądze na zero) i ekran przegranej z restartem.
   - [x] Widok ekranu przegranej z czasem i restartem (`GameOverView.Show(czas, powód)`).
   - [x] Wykrywanie przegranej w `Economy` i pokazanie ekranu przez `GameSession`.
