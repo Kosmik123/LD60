@@ -54,7 +54,7 @@ namespace SpaghettiWires.Networking
         /// Szuka najkrótszej trasy z wolnymi żyłami i, jeśli jest, zajmuje ją na czas rozmowy.
         /// Zwraca false („zajęte”), gdy trasy nie ma albo węzeł początkowy lub docelowy jest zajęty.
         /// </summary>
-        public bool TryStartCall(NodeId fromNodeId, NodeId toNodeId, out Call call)
+        public bool TryStartCall(NodeId fromNodeId, NodeId toNodeId, float duration, out Call call)
         {
             call = null;
             if (fromNodeId == toNodeId)
@@ -64,7 +64,7 @@ namespace SpaghettiWires.Networking
             if (!TryFindRoute(fromNodeId, toNodeId, out var nodes, out var cables, out float length))
                 return false;
 
-            call = new Call(new CallId(_nextCallId++), nodes, cables, length);
+            call = new Call(new CallId(_nextCallId++), nodes, cables, length, duration);
             _calls.Add(call.Id, call);
             foreach (CableId cableId in cables)
             {

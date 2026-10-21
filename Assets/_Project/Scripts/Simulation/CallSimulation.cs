@@ -59,16 +59,19 @@ namespace SpaghettiWires.Simulation
         public CallOutcome TryCall(NodeId from, NodeId to)
         {
             var traffic = _network.Traffic;
+
+            // Czas trwania znany przed połączeniem, bo rozmowa przechowuje go od początku (np. do zapłaty).
+            float duration = Lerp(_settings.MinDuration, _settings.MaxDuration, (float)_random.NextDouble());
+
             CallOutcome outcome;
             if (!HasFreeLine(from))
                 outcome = CallOutcome.CallerBusy;
             else if (!HasFreeLine(to))
                 outcome = CallOutcome.CalleeBusy;
-            else if (!traffic.TryStartCall(from, to, out var call))
+            else if (!traffic.TryStartCall(from, to, duration, out var call))
                 outcome = CallOutcome.NoRoute;
             else
             {
-                float duration = Lerp(_settings.MinDuration, _settings.MaxDuration, (float)_random.NextDouble());
                 _endTimes.Add(call.Id, Time + duration);
                 CallConnected?.Invoke(call);
                 return CallOutcome.Connected;

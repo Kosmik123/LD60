@@ -21,12 +21,15 @@ namespace SpaghettiWires.Networking
         /// <summary>Suma <see cref="Cable.Length"/> na trasie. Symulacja przelicza ją na jakość rozmowy.</summary>
         public float Length { get; }
 
-        public Call(CallId id, IReadOnlyList<NodeId> nodes, IReadOnlyList<CableId> cables, float length)
+        public float Duration { get; } 
+
+		public Call(CallId id, IReadOnlyList<NodeId> nodes, IReadOnlyList<CableId> cables, float length, float duration)
         {
             Id = id;
             Nodes = nodes;
             Cables = cables;
             Length = length;
+            Duration = duration;
             From = nodes[0];
             To = nodes[nodes.Count - 1];
         }

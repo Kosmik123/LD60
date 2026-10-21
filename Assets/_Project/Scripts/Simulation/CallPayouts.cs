@@ -33,7 +33,7 @@ namespace SpaghettiWires.Simulation
 
         private void OnCallCompleted(Call call)
         {
-            _economy.Earn(_settings.MoneyPerCompletedCall);
+            _economy.Earn(_settings.MoneyPerCompletedCallPerSecond * call.d);
             _economy.ChangeReputation(_settings.ReputationPerCompletedCall);
         }
 

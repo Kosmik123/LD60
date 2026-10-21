@@ -7,6 +7,9 @@ namespace SpaghettiWires.Tests.Networking
 {
     public class TrafficTests
     {
+        // Warstwa ruchu tylko zapamiętuje czas trwania (rozmowy kończy symulacja), więc w tych testach jest dowolny.
+        private const float CallDuration = 5f;
+
         private CableNetwork _structure;
         private CableCondition _condition;
         private Traffic _traffic;
@@ -26,7 +29,7 @@ namespace SpaghettiWires.Tests.Networking
 
         private Call Start(NodeId from, NodeId to)
         {
-            Assert.IsTrue(_traffic.TryStartCall(from, to, out var call), $"Call {from}->{to} should start.");
+            Assert.IsTrue(_traffic.TryStartCall(from, to, CallDuration, out var call), $"Call {from}->{to} should start.");
             return call;
         }
 
@@ -80,7 +83,7 @@ namespace SpaghettiWires.Tests.Networking
             for (int i = 0; i < 4; i++)
                 Start(a, b);
 
-            Assert.IsFalse(_traffic.TryStartCall(a, b, out var busy));
+            Assert.IsFalse(_traffic.TryStartCall(a, b, CallDuration, out var busy));
             Assert.IsNull(busy);
             Assert.AreEqual(4, _traffic.GetBusyPairs(trunk));
         }
@@ -94,7 +97,7 @@ namespace SpaghettiWires.Tests.Networking
 
             Start(a, b);
 
-            Assert.IsFalse(_traffic.TryStartCall(a, b, out _));
+            Assert.IsFalse(_traffic.TryStartCall(a, b, CallDuration, out _));
             Assert.AreEqual(0, _traffic.GetFreePairs(trunk));
         }
 
@@ -107,7 +110,7 @@ namespace SpaghettiWires.Tests.Networking
             _condition.Break(shortCable);
 
             CollectionAssert.AreEqual(new[] { viaB1, viaB2 }, Start(a, c).Cables);
-            Assert.IsFalse(_traffic.TryStartCall(a, c, out _));
+            Assert.IsFalse(_traffic.TryStartCall(a, c, CallDuration, out _));
         }
 
         [Test]
@@ -115,7 +118,7 @@ namespace SpaghettiWires.Tests.Networking
         {
             NodeId a = House(), b = House();
 
-            Assert.IsFalse(_traffic.TryStartCall(a, b, out _));
+            Assert.IsFalse(_traffic.TryStartCall(a, b, CallDuration, out _));
         }
 
         [Test]
@@ -127,8 +130,8 @@ namespace SpaghettiWires.Tests.Networking
             Cable(c, pole);
             var call = Start(a, b);
 
-            Assert.IsFalse(_traffic.TryStartCall(c, a, out _));
-            Assert.IsFalse(_traffic.TryStartCall(b, c, out _));
+            Assert.IsFalse(_traffic.TryStartCall(c, a, CallDuration, out _));
+            Assert.IsFalse(_traffic.TryStartCall(b, c, CallDuration, out _));
 
             _traffic.EndCall(call.Id);
 
@@ -148,7 +151,7 @@ namespace SpaghettiWires.Tests.Networking
 
             CollectionAssert.AreEqual(new[] { a, relay, b }, call.Nodes);
             Assert.AreEqual(1, _traffic.GetNodeLoad(relay));
-            Assert.IsFalse(_traffic.TryStartCall(other, relay, out _));
+            Assert.IsFalse(_traffic.TryStartCall(other, relay, CallDuration, out _));
         }
 
         [Test]
@@ -295,8 +298,8 @@ namespace SpaghettiWires.Tests.Networking
         {
             NodeId a = House();
 
-            Assert.Throws<ArgumentException>(() => _traffic.TryStartCall(a, a, out _));
-            Assert.Throws<KeyNotFoundException>(() => _traffic.TryStartCall(a, new NodeId(999), out _));
+            Assert.Throws<ArgumentException>(() => _traffic.TryStartCall(a, a, CallDuration, out _));
+            Assert.Throws<KeyNotFoundException>(() => _traffic.TryStartCall(a, new NodeId(999), CallDuration, out _));
             Assert.Throws<KeyNotFoundException>(() => _traffic.GetBusyPairs(new CableId(999)));
             Assert.Throws<KeyNotFoundException>(() => _traffic.GetNodeLoad(new NodeId(999)));
         }

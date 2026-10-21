@@ -707,8 +707,8 @@ MonoBehaviour:
   settings:
     callsPerHousePerMinute: 1
     growthPerMinute: 0.25
-    minDuration: 6
-    maxDuration: 12
+    minDuration: 2
+    maxDuration: 5
   generatorEnabled: 1
   seed: 0
 --- !u!114 &627531557
@@ -1438,7 +1438,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SpaghettiWires.Sandbox::SpaghettiWires.Sandbox.SandboxBuildActions
   grid: {fileID: 59145765}
   views: {fileID: 351612543}
-  minHouseDistance: 2
+  minHouseDistance: 3
   seed: 60
   cableSpan: 5
   trunkSpan: 7
@@ -1472,12 +1472,12 @@ MonoBehaviour:
   session: {fileID: 1939745710}
   simulation: {fileID: 627531556}
   payouts:
-    moneyPerCompletedCall: 25
+    moneyPerCompletedCallPerSecond: 3
     reputationPerCompletedCall: 0.01
-    reputationPerNoRoute: -0.02
-    reputationPerCalleeBusy: -0.01
-    reputationPerCallerBusy: -0.01
-    reputationPerDroppedCall: -0.04
+    reputationPerNoRoute: -0.01
+    reputationPerCalleeBusy: -0.001
+    reputationPerCallerBusy: -0.001
+    reputationPerDroppedCall: -0.025
 --- !u!4 &1350568150
 Transform:
   m_ObjectHideFlags: 0
@@ -1655,9 +1655,9 @@ MonoBehaviour:
   session: {fileID: 1939745710}
   grid: {fileID: 59145765}
   views: {fileID: 351612543}
-  polePrice: 100
-  cablePricePerMeter: 5
-  trunkPricePerPairMeter: 3.5
+  polePrice: 80
+  cablePricePerMeter: 4
+  trunkPricePerPairMeter: 3
 --- !u!114 &1814625425
 MonoBehaviour:
   m_ObjectHideFlags: 0

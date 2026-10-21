@@ -29,7 +29,7 @@ namespace SpaghettiWires.Tests.Simulation
             _simulation = new CallSimulation(_network, new CallSettings(0f, 0f, 1f, 1f), new Random(1)) { GeneratorEnabled = false };
             _economy = new Economy(100, 0.5f);
             _payouts = new CallPayouts(_simulation, _economy,
-                new CallPayoutSettings(moneyPerCompletedCall: 25, reputationPerCompletedCall: 0.01f, reputationPerNoRoute: -0.02f,
+                new CallPayoutSettings(moneyPerCompletedCallPerSecond: 25, reputationPerCompletedCall: 0.01f, reputationPerNoRoute: -0.02f,
                     reputationPerCalleeBusy: -0.03f, reputationPerCallerBusy: -0.05f, reputationPerDroppedCall: -0.1f));
         }
 

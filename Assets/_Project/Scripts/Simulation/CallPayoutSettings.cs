@@ -11,7 +11,7 @@ namespace SpaghettiWires.Simulation
     public sealed class CallPayoutSettings
     {
         [Tooltip("Pieniądze za rozmowę zakończoną normalnie.")]
-        [Min(0)] [SerializeField] private int moneyPerCompletedCall = 25;
+        [Min(0)] [SerializeField] private int moneyPerCompletedCallPerSecond = 3;
         [Tooltip("Zmiana reputacji za rozmowę zakończoną normalnie.")]
         [SerializeField] private float reputationPerCompletedCall = 0.01f;
         [Tooltip("Zmiana reputacji, gdy nie ma trasy z wolnymi żyłami.")]
@@ -23,16 +23,16 @@ namespace SpaghettiWires.Simulation
         [Tooltip("Zmiana reputacji za rozmowę zerwaną przez awarię lub usunięcie kabla.")]
         [SerializeField] private float reputationPerDroppedCall = -0.04f;
 
-        public int MoneyPerCompletedCall => moneyPerCompletedCall;
+        public int MoneyPerCompletedCallPerSecond => moneyPerCompletedCallPerSecond;
         public float ReputationPerCompletedCall => reputationPerCompletedCall;
         public float ReputationPerDroppedCall => reputationPerDroppedCall;
 
         public CallPayoutSettings() { }
 
-        public CallPayoutSettings(int moneyPerCompletedCall, float reputationPerCompletedCall, float reputationPerNoRoute,
+        public CallPayoutSettings(int moneyPerCompletedCallPerSecond, float reputationPerCompletedCall, float reputationPerNoRoute,
             float reputationPerCalleeBusy, float reputationPerCallerBusy, float reputationPerDroppedCall)
         {
-            this.moneyPerCompletedCall = moneyPerCompletedCall;
+            this.moneyPerCompletedCallPerSecond = moneyPerCompletedCallPerSecond;
             this.reputationPerCompletedCall = reputationPerCompletedCall;
             this.reputationPerNoRoute = reputationPerNoRoute;
             this.reputationPerCalleeBusy = reputationPerCalleeBusy;
